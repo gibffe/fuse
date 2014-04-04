@@ -16,9 +16,13 @@ public abstract class FuseActor extends UntypedActor {
 	
 	protected ApplicationContext ctx;
 	
-	public FuseActor(ApplicationContext ctx) {
-		this.ctx = ctx;
+	public FuseActor() {		
 		this.logger = getContext().actorSelection("/user/logger");
+	}
+	
+	public FuseActor(ApplicationContext ctx) {
+		this();
+		this.ctx = ctx;
 	}
 	
 	@Override

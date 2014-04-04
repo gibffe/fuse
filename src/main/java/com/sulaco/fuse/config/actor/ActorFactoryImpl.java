@@ -1,7 +1,8 @@
 package com.sulaco.fuse.config.actor;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -23,6 +24,7 @@ public class ActorFactoryImpl implements ActorFactory {
 	
 	ApplicationContext ctx;
 	
+	// caches { actor_id -> actor instance }
 	ConcurrentMap<String, ActorRef> cache;
 	
 	public ActorFactoryImpl() {
@@ -30,7 +32,14 @@ public class ActorFactoryImpl implements ActorFactory {
 	}
 	
 	@Override
-	public ActorRef getLocalActor(String actorClass, int spinCount) {
+	public Optional<ActorRef> getLocalActorByRef(String ref) {
+		return Optional.ofNullable(cache.get(ref));
+	}
+	
+	@Override
+	public Optional<ActorRef> getLocalActor(String ref, String actorClass, int spinCount) {
+		
+		ActorRef actorRef = null;
 		
 		try {
 			// preconditions check
@@ -39,51 +48,51 @@ public class ActorFactoryImpl implements ActorFactory {
 
 			if (spinCount < 0) {
 				// never cache for negative spin, always return fresh actor shell
-				return system.actorOf(Props.create(clazz, ctx),	actorClass);		
+				actorRef = system.actorOf(Props.create(clazz, ctx),	actorClass);		
 			}
 			else {
-				return cache.computeIfAbsent(
-							actorClass, 
-							key -> {
-								if (spinCount == 1) {
-									return system.actorOf(
-												Props.create(clazz, ctx), 
-												actorClass
-									);
-								}
-								else {
-									// return a router instead
-									return system.actorOf(
-												Props.empty()
-												 	 .withRouter(
-												         RoundRobinRouter.create(routees(clazz, spinCount))
-												     )
-									);
-								}
-							}
-				);
+				actorRef 
+					= cache.computeIfAbsent(
+						  ref, 
+						  key -> {
+							  if (spinCount == 1) {
+								  return system.actorOf(
+											Props.create(clazz, ctx), 
+											actorClass
+								  );
+							  }
+							  else {
+								  // return a router instead
+								  return system.actorOf(
+											Props.empty()
+											 	 .withRouter(
+											         RoundRobinRouter.create(routees(ref,clazz, spinCount))
+											     )
+								  );
+							  }
+						  }
+					);
 			}
 		}
 		catch (Exception ex) {
 			log.error("Error creating actor:{}", actorClass, ex);
 		}
-		//
-		return null;
+		
+		return Optional.ofNullable(actorRef);
 	}
 	
-	protected Iterable<ActorRef> routees(Class<?> clazz, int spinCount) {
+	protected Iterable<ActorRef> routees(String ref, Class<?> clazz, int spinCount) {
 		
-		List<ActorRef> actors = Collections.nCopies(spinCount, null);
+		List<ActorRef> actors = new ArrayList<>();
 		
-		actors.stream()
-	          .map(
-	              e -> {
-	                  return system.actorOf(
-				    			      Props.create(clazz, ctx),
-				    				  clazz.getName()
-	    			  );
-	              }
-	          );
+		for (int i = 0; i < spinCount; i++) {
+			actors.add(
+			    system.actorOf(
+			    			Props.create(clazz, ctx),
+		    				ref + "_" + i
+			    )
+			);
+		}
 		
 		return actors;
 	}
@@ -99,4 +108,5 @@ public class ActorFactoryImpl implements ActorFactory {
 	}
 	
 	private static final Logger log = LoggerFactory.getLogger(ActorFactoryImpl.class);
+
 }

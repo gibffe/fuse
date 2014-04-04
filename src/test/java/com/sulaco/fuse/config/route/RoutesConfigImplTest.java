@@ -1,6 +1,12 @@
 package com.sulaco.fuse.config.route;
 
+import static org.assertj.core.api.Assertions.*;
+
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.util.Optional;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -8,6 +14,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 
 import com.sulaco.fuse.config.ConfigSource;
@@ -46,12 +53,97 @@ public class RoutesConfigImplTest {
 	@Test
 	public void testParseRoutes() {
 		// given
+		ActorRef mockActorRef = mock(ActorRef.class);
+		
+		when(mockActorFactory.getLocalActor(anyString(), anyString(), anyInt()))
+			.thenReturn(Optional.ofNullable(mockActorRef));
+		
+		when(mockActorFactory.getLocalActorByRef(anyString()))
+			.thenReturn(Optional.ofNullable(mockActorRef));
 		
 		// when
 		instance.parse();
 		
 		// then
-		// TODO
+			
+			// assert /simple/rest/path
+			assertThat(
+				instance.root.children.get("simple")
+				             .children.get("rest")
+				             .children.get("path")
+		    ).isNotNull();
+			
+			assertThat(
+				instance.root.children.get("simple").handler().isPresent()	
+			).isFalse();
+			
+			assertThat(
+				instance.root.children.get("simple")
+				   			 .children.get("rest")
+				   			 .handler.isPresent()
+			).isFalse();
+			
+			assertThat(
+				instance.root.children.get("simple")
+				             .children.get("rest")
+				             .children.get("path")
+				             .handler.isPresent()
+					
+			).isTrue();
+			
+			// assert /simple/rest/<uid>
+			assertThat(
+				instance.root.children.get("simple")
+							 .children.get("rest")
+							 .children.get("*")
+			).isNotNull();
+			
+			assertThat(
+				instance.root.children.get("simple")
+							 .children.get("rest")
+							 .children.get("*")
+							 .handler.isPresent()
+			).isTrue();
+			
+			// assert /test/<uid>/list
+			assertThat(
+					instance.root.children.get("test")
+								 .children.get("*")
+			).isNotNull();
+
+			assertThat(
+					instance.root.children.get("test")
+								 .children.get("*")
+								 .handler.isPresent()
+			).isFalse();
+			
+			assertThat(
+					instance.root.children.get("test")
+								 .children.get("*")
+								 .children.get("list")
+			).isNotNull();
+			
+			assertThat(
+					instance.root.children.get("test")
+								 .children.get("*")
+								 .children.get("list")
+								 .handler.isPresent()
+			).isTrue();
+			
+			// assert /test/<uid>/delete
+			assertThat(
+					instance.root.children.get("test")
+								 .children.get("*")
+								 .children.get("delete")
+			).isNotNull();
+
+			assertThat(
+					instance.root.children.get("test")
+								 .children.get("*")
+								 .children.get("delete")
+								 .handler.isPresent()
+			).isTrue();
+			
 	}
 	
 }

@@ -41,17 +41,50 @@ public class RoutesConfigImpl implements RoutesConfig {
 	public void parse() {		
 		log.info("[fuse] Parsing routes");
 		
-		Set<Entry<String, ConfigValue>> routes 
+		// parse actors section
+		parseActorDefs();
+		
+		// parse routes section
+		parseRouteDefs();
+	}
+	
+	protected void parseActorDefs() {
+		Set<Entry<String, ConfigValue>> actorDefs 
+			= configSource.getConfig()
+						  .getObject("actors")
+						  .entrySet();
+
+		for (Entry<String, ConfigValue> entry : actorDefs) {
+			processActorEntry(entry);
+		}
+	}
+	
+	protected void parseRouteDefs() {
+		Set<Entry<String, ConfigValue>> routeDefs
 			= configSource.getConfig()
 						  .getObject("routes")
 						  .entrySet();
-	
-		for (Entry<String, ConfigValue> entry : routes) {
-			processConfigEntry(entry);
+
+		for (Entry<String, ConfigValue> entry : routeDefs) {
+			processRouteEntry(entry);
 		}
 	}
+	
+	protected void processActorEntry(Entry<String, ConfigValue> entry) {
+	
+		// extract actor class
+		String actorClass = entry.getKey();
+		
+		// extract definition
+		Map<String, Object> map = (Map<String, Object>) entry.getValue().unwrapped();
+		
+		String id = (String) map.get("id");
+		int spinCount = parseSpinCount(map.get("spin"));
+		
+		factory.getLocalActor(id, actorClass, spinCount);
+	}
 
-	protected void processConfigEntry(Entry<String, ConfigValue> entry) {
+	protected void processRouteEntry(Entry<String, ConfigValue> entry) {
 	
 		// process actor definition
 		Optional<RouteHandler> handler = processActorDefinition(entry.getValue());
@@ -67,18 +100,14 @@ public class RoutesConfigImpl implements RoutesConfig {
 			// extract actor definition
 			Map<String, Object> map = (Map<String, Object>) cvalue.unwrapped();
 
-			String actorClass, methodName;
-			int spinCount = defaultSpinCount();
-
-			spinCount  = parseSpinCount(map.get("spin"));
-			actorClass = parseActorClass(map.get("class"));
-			methodName = (String) map.get("method");
-			
-			// create actor/router handler
-			ActorRef actor = factory.getLocalActor(actorClass, spinCount);
+			String actorRef   = (String) map.get("ref");
+			String methodName = (String) map.get("call");
 			
 			return Optional.ofNullable(
-					new RouteHandler(actor, methodName)
+					new RouteHandler(
+							factory.getLocalActorByRef(actorRef), 
+							methodName
+					)
 			);
 		}
 		catch (Exception ex) {
@@ -113,6 +142,8 @@ public class RoutesConfigImpl implements RoutesConfig {
 	
 	private RouteSegment processSegment(String value, boolean more, RouteSegmentBuilder builder, RouteSegment parent, RouteHandler handler) {
 		
+		RouteSegment segment = null;
+		
 		builder.withValue(value);
 		builder.withParent(parent);
 		
@@ -126,9 +157,18 @@ public class RoutesConfigImpl implements RoutesConfig {
 			// last segment, assign handling actor
 			builder.withHandler(handler);
 		}
+		segment = builder.build();
 		
-		// build & store segment
-		return builder.build();
+		// check if parent already has a segment for this very segment key
+		// if it does, assign handler if necessary
+		RouteSegment existing = parent.children.get(segment.key());
+		if (existing != null && !existing.handler.isPresent()) {
+			existing.handler = segment.handler;
+		}
+
+		return existing != null 
+			            ? existing 
+			            : segment;
 	}
 	
 	private RouteSegment saveSegment(RouteSegment segment) {
@@ -149,18 +189,6 @@ public class RoutesConfigImpl implements RoutesConfig {
 		}
 		
 		return defaultSpinCount();
-	}
-	
-	private String parseActorClass(Object value) {
-		
-		if (value != null) {
-			if (value instanceof String) {
-				return (String) value;
-			}
-			throw new IllegalArgumentException("wrong actor class");
-		}
-		
-		throw new IllegalArgumentException("wrong actor class");
 	}
 	
 	private int defaultSpinCount() {
