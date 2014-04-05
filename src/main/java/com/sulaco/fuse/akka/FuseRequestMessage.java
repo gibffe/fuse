@@ -11,6 +11,8 @@ public interface FuseRequestMessage {
 	
 	ChannelHandlerContext getChannelContext();
 	
-	HttpRequest getIncomingRequest();
+	HttpRequest getRequest();
+	
+	FuseRequestContext getContext();
 	
 }

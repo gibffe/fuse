@@ -21,7 +21,7 @@ public class RouteFinderActor extends FuseActor {
 	@Override
 	protected void onReceive(FuseRequestMessage message) {
 		
-		String uri = message.getIncomingRequest()
+		String uri = message.getRequest()
 				            .getUri();
 		
 		Optional<Route> route = routes.getFuseRoute(uri);
@@ -29,8 +29,6 @@ public class RouteFinderActor extends FuseActor {
 		if (route.isPresent()) {
 			
 			// add route to the message
-			
-			
 			route.get()
 			     .getHandler()
 			     .tell(message, getSelf());

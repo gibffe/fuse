@@ -4,11 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import akka.actor.ActorRef;
-
 class RouteImpl implements Route {
 
-	ActorRef handler;
+	RouteHandler handler;
 	
 	Map<String, String> params;
 	
@@ -28,7 +26,7 @@ class RouteImpl implements Route {
 			this.instance = new RouteImpl();
 		}
 		
-		public RouteBuilder withHandler(ActorRef handler) {
+		public RouteBuilder withHandler(RouteHandler handler) {
 			instance.handler = handler;
 			return this;
 		}
@@ -54,7 +52,7 @@ class RouteImpl implements Route {
 	}
 	
 	@Override
-	public ActorRef getHandler() {
+	public RouteHandler getHandler() {
 		return handler;
 	}
 

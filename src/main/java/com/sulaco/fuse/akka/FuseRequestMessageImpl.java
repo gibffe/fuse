@@ -7,13 +7,16 @@ import java.io.Serializable;
 
 import com.sulaco.fuse.config.route.Route;
 
-public class FuseRequestMessageImpl implements FuseRequestMessage, Serializable {
+public class FuseRequestMessageImpl implements FuseRequestMessage {
 	
 	ChannelHandlerContext channelContext;
 	
 	HttpRequest incomingRequest;
 	
+	FuseRequestContext requestContext;
+
 	Route route;
+	
 	
 	public FuseRequestMessageImpl(ChannelHandlerContext context, HttpRequest request) {
 		this.channelContext  = context;
@@ -26,15 +29,18 @@ public class FuseRequestMessageImpl implements FuseRequestMessage, Serializable 
 	}
 
 	@Override
-	public HttpRequest getIncomingRequest() {
+	public HttpRequest getRequest() {
 		return incomingRequest;
 	}
 
 	@Override
+	public FuseRequestContext getContext() {
+		return requestContext;
+	}
+	
+	@Override
 	public Route getRoute() {
 		return route;
 	}
-	
-	private static final long serialVersionUID = -716541497905060639L;
 
 }

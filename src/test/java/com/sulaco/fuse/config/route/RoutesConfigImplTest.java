@@ -143,7 +143,39 @@ public class RoutesConfigImplTest {
 								 .children.get("delete")
 								 .handler.isPresent()
 			).isTrue();
-			
+	}
+	
+	@Test
+	public void testGetFuseRoute() {
+		
+		// given
+		instance.parse();
+		
+		// when
+		Optional<Route> route = instance.getFuseRoute("http://localhost:8080/simple/rest/path");
+		
+		// then
+		assertThat(route).isNotNull();
+		assertThat(route.isPresent()).isTrue();
+		assertThat(route.get().getParams()).isEmpty();
+	}
+	
+	@Test
+	public void testGetFuseDynamicRoute() {
+		
+		// given
+		instance.parse();
+		
+		// when
+		Optional<Route> route = instance.getFuseRoute("http://localhost:8080/simple/rest/12345");
+		
+		// then
+		assertThat(route).isNotNull();
+		assertThat(route.isPresent()).isTrue();
+		
+		Optional<String> uid = route.get().getParam("uid");
+		assertThat(uid.isPresent());
+		assertThat(uid.get()).isEqualTo("12345");
 	}
 	
 }
