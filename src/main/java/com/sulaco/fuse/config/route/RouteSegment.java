@@ -96,19 +96,6 @@ public final class RouteSegment {
 	
 	public RouteSegment addChild(final RouteSegment child) {
 		
-		child.parent = Optional.ofNullable(this);
-		
-		this.children.computeIfPresent(
-							child.key(), 
-							(key, segment) -> {
-								if (child.handler.isPresent()) {
-									// copy handler from "duplicate" child segment
-									segment.handler = child.handler;
-								}
-								return segment;
-							}
-		);
-
 		this.children.putIfAbsent(child.key(), child);
 		
 		return child;
