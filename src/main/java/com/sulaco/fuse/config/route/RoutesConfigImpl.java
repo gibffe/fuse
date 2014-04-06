@@ -3,6 +3,7 @@ package com.sulaco.fuse.config.route;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import akka.actor.ActorRef;
 
@@ -207,25 +209,64 @@ public class RoutesConfigImpl implements RoutesConfig {
 			String path = uri.getPath();
 			String[] segments = path.split("/");
 			
-			if (segments.length > 0) {
+			if (segments.length > 1) {
 				// perform pattern matching against existing routes config
 				route = find(segments);
+				if (route == null) {
+					log.warn("Matchng handler for '{}' was not found.", requestUri);
+				}
 			}
 		}
 		catch (Exception ex) {
 			log.warn("Error parsing request uri", ex);
 		}
 		
-		return Optional.of(route);
+		return Optional.ofNullable(route);
 	}
 	
 	private String extractParamName(String value) {
-		// value.split("(<)(>)")[1]
 		return value.split("<")[1].split(">")[0];
 	}
 	
 	protected Route find(String[] segments) {
-		return null;
+		
+		Optional<RouteSegment> next;
+		RouteSegment current = this.root;
+		
+		// holds parameters captured during route resolution
+		Map<String, String> params = new HashMap<>();
+
+		for(int i = 1; i < segments.length; i++) {
+
+			next = current.child(segments[i]);
+			
+			if (!next.isPresent()) {
+				// look for 'parameter matching' segment
+				next = current.child("*");
+				if (next.isPresent()) {
+					// capture parameter
+					params.putIfAbsent(next.get().value(), segments[i]);
+				}
+			}
+			
+			if (next.isPresent()) {
+				current = next.get();
+			}
+			else {
+				return null;
+			}
+		}
+		
+		// construct a route object
+		if (current.handler().isPresent()) {
+			return RouteImpl.builder()
+					        .withHandler(current.handler().get())
+					        .withParams(params)
+					        .build();
+		}
+		else {
+			return null;
+		}
 	}
 	
 	private static final Logger log = LoggerFactory.getLogger(RoutesConfigImpl.class);
