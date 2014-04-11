@@ -23,6 +23,9 @@ public abstract class FuseActor extends UntypedActor {
 	public FuseActor(ApplicationContext ctx) {
 		this();
 		this.ctx = ctx;
+		
+		ctx.getAutowireCapableBeanFactory()
+		   .autowireBean(this);
 	}
 	
 	@Override
@@ -37,7 +40,7 @@ public abstract class FuseActor extends UntypedActor {
 		
 	}
 	
-	protected abstract void onReceive(FuseRequestMessage message);
+	protected abstract void onReceive(final FuseRequestMessage message);
 	
 	protected void info(String message) {
 		

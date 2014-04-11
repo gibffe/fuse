@@ -104,19 +104,32 @@ public class RoutesConfigImpl implements RoutesConfig {
 
 			String actorRef   = (String) map.get("ref");
 			String methodName = (String) map.get("call");
+			String actorClass = (String) map.get("class");
 			
+			Optional<ActorRef> ref = Optional.empty();
+			
+			if (!StringUtils.isEmpty(actorRef)) {
+				// get actor by reference supplied
+				ref = factory.getLocalActorByRef(actorRef);
+			}
+			
+			if (!StringUtils.isEmpty(actorClass)) {
+				// create new actor using class specified
+				
+			}
+
 			return Optional.ofNullable(
 					new RouteHandler(
 							factory.getLocalActorByRef(actorRef), 
 							methodName
-					)
-			);
+						)
+					);
 		}
 		catch (Exception ex) {
 			log.warn("Error parsing actor definition: "+cvalue.render());
 		}
 		
-		return _null();
+		return empty();
 	}
 
 	

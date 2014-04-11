@@ -4,7 +4,7 @@ import java.util.Optional;
 
 public class Tools {
 
-	public static <T> Optional<T> _null() {
-		return Optional.of(null);
+	public static <T> Optional<T> empty() {
+		return Optional.empty();
 	}
 }
