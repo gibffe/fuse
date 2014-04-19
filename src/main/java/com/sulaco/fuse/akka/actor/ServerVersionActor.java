@@ -4,16 +4,17 @@ import org.springframework.context.ApplicationContext;
 
 import com.sulaco.fuse.akka.FuseRequestMessage;
 
-@SuppressWarnings("unused")
-public class ServerEchoActor extends FuseActor {
+public class ServerVersionActor extends FuseActor {
 
-	public ServerEchoActor(ApplicationContext ctx) {
+	private static final String ECHO = "{ \"version\" : \"" + VERSION + "\" }";
+	
+	public ServerVersionActor(ApplicationContext ctx) {
 		super(ctx);
 	}
 	
 	@Override
 	protected void onReceive(FuseRequestMessage message) {
-		int a = 3;
+		respond(message, ECHO);
 	}
 
 }

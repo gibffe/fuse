@@ -10,8 +10,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.sulaco.fuse.util.Tools.*;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import akka.actor.ActorRef;
-
+import static com.sulaco.fuse.util.Tools.*;
 import com.sulaco.fuse.config.ConfigSource;
 import com.sulaco.fuse.config.actor.ActorFactory;
 import com.sulaco.fuse.config.route.RouteSegment.RouteSegmentBuilder;
@@ -115,12 +113,13 @@ public class RoutesConfigImpl implements RoutesConfig {
 			
 			if (!StringUtils.isEmpty(actorClass)) {
 				// create new actor using class specified
+				ref = factory.getLocalActor(actorClass);
 				
 			}
 
 			return Optional.ofNullable(
 					new RouteHandler(
-							factory.getLocalActorByRef(actorRef), 
+							ref, 
 							methodName
 						)
 					);

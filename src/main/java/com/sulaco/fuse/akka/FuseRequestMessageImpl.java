@@ -19,10 +19,6 @@ public class FuseRequestMessageImpl implements FuseRequestMessage {
 
 	Route route;
 	
-	public void setRoute(Route route) {
-		this.route = route;
-	}
-	
 	public FuseRequestMessageImpl(ChannelHandlerContext context, HttpRequest request) {
 		this.channelContext  = context;
 		this.incomingRequest = request;
@@ -57,5 +53,9 @@ public class FuseRequestMessageImpl implements FuseRequestMessage {
 	public Optional<String> getParam(String name) {
 		return route.getParam(name);
 	}
-
+	
+	public void setRoute(Route route) {
+		this.route = route;
+	}
+	
 }
