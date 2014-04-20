@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 import com.sulaco.fuse.akka.FuseRequestMessage;
+import com.sulaco.fuse.akka.FuseRequestMessageImpl;
 import com.sulaco.fuse.config.route.Route;
 import com.sulaco.fuse.config.route.RoutesConfig;
 
@@ -19,25 +20,31 @@ public class RouteFinderActor extends FuseActor {
 	}
 
 	@Override
-	protected void onReceive(FuseRequestMessage message) {
+	protected void onReceive(final FuseRequestMessage message) {
 		
-		String uri = message.getIncomingRequest()
-				            .getUri();
+		String uri = message.getRequest().getUri();
 		
 		Optional<Route> route = routes.getFuseRoute(uri);
 		
-		if (route.isPresent()) {
-			
-			// add route to the message
-			
-			
-			route.get()
-			     .getHandler()
-			     .tell(message, getSelf());
-		}
-		else {
-			info("no handler for: " + uri);
-		}
+		route.ifPresent(
+		    rte -> {
+		    	// add route to the message
+				((FuseRequestMessageImpl) message).setRoute(rte);
+				
+				// pass message to handling actor
+				rte.getHandler()
+				   .getActor()
+				   .ifPresent(
+				       handler -> {
+				         	  handler.tell(message, getSelf());
+				       }
+				   );	
+		    }
+		);
+	}
+
+	public void setRoutes(RoutesConfig routes) {
+		this.routes = routes;
 	}
 	
 }

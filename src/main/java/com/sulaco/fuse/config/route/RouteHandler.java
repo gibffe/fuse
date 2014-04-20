@@ -16,8 +16,8 @@ public class RouteHandler {
 		actor = Optional.ofNullable(null);
 	}
 
-	public RouteHandler(ActorRef actor, String methodName) {
-		this.actor      = Optional.ofNullable(actor);
+	public RouteHandler(Optional<ActorRef> actor, String methodName) {
+		this.actor      = actor;
 		this.methodName = Optional.ofNullable(methodName);
 	}
 

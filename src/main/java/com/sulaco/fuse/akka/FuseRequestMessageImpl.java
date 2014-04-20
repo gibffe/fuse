@@ -3,16 +3,20 @@ package com.sulaco.fuse.akka;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
 
-import java.io.Serializable;
+import java.util.Map;
+import java.util.Optional;
 
 import com.sulaco.fuse.config.route.Route;
+import com.sulaco.fuse.config.route.RouteHandler;
 
-public class FuseRequestMessageImpl implements FuseRequestMessage, Serializable {
+public class FuseRequestMessageImpl implements FuseRequestMessage {
 	
 	ChannelHandlerContext channelContext;
 	
 	HttpRequest incomingRequest;
 	
+	FuseRequestContext requestContext;
+
 	Route route;
 	
 	public FuseRequestMessageImpl(ChannelHandlerContext context, HttpRequest request) {
@@ -26,15 +30,32 @@ public class FuseRequestMessageImpl implements FuseRequestMessage, Serializable 
 	}
 
 	@Override
-	public HttpRequest getIncomingRequest() {
+	public HttpRequest getRequest() {
 		return incomingRequest;
 	}
 
 	@Override
-	public Route getRoute() {
-		return route;
+	public FuseRequestContext getContext() {
+		return requestContext;
+	}
+
+	@Override
+	public RouteHandler getHandler() {
+		return route.getHandler();
+	}
+
+	@Override
+	public Map<String, String> getParams() {
+		return route.getParams();
+	}
+
+	@Override
+	public Optional<String> getParam(String name) {
+		return route.getParam(name);
 	}
 	
-	private static final long serialVersionUID = -716541497905060639L;
-
+	public void setRoute(Route route) {
+		this.route = route;
+	}
+	
 }
