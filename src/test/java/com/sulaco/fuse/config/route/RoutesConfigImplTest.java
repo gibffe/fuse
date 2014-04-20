@@ -105,31 +105,6 @@ public class RoutesConfigImplTest {
 							 .handler.isPresent()
 			).isTrue();
 			
-			// assert /test/<uid>/list
-			assertThat(
-					instance.root.children.get("test")
-								 .children.get("*")
-			).isNotNull();
-
-			assertThat(
-					instance.root.children.get("test")
-								 .children.get("*")
-								 .handler.isPresent()
-			).isFalse();
-			
-			assertThat(
-					instance.root.children.get("test")
-								 .children.get("*")
-								 .children.get("list")
-			).isNotNull();
-			
-			assertThat(
-					instance.root.children.get("test")
-								 .children.get("*")
-								 .children.get("list")
-								 .handler.isPresent()
-			).isTrue();
-			
 			// assert /test/<uid>/delete
 			assertThat(
 					instance.root.children.get("test")
@@ -141,6 +116,18 @@ public class RoutesConfigImplTest {
 					instance.root.children.get("test")
 								 .children.get("*")
 								 .children.get("delete")
+								 .handler.isPresent()
+			).isTrue();
+			
+			// assert /simple/actor
+			assertThat(
+					instance.root.children.get("simple")
+								 .children.get("actor")
+			).isNotNull();
+			
+			assertThat(
+					instance.root.children.get("simple")
+								 .children.get("actor")
 								 .handler.isPresent()
 			).isTrue();
 	}

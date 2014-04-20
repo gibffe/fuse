@@ -29,6 +29,7 @@ import akka.routing.RoundRobinRouter;
 import com.sulaco.fuse.akka.actor.RouteFinderActor;
 import com.sulaco.fuse.akka.syslog.SystemLogActor;
 import com.sulaco.fuse.config.ConfigSource;
+import com.sulaco.fuse.config.actor.ActorFactory;
 import com.sulaco.fuse.netty.FuseChannelInitializer;
 import com.typesafe.config.Config;
 
@@ -40,6 +41,7 @@ public class FuseServerImpl implements FuseServer, InitializingBean, Application
 	protected ActorSystem actorSystem;
 	protected ApplicationContext appContext;
 	
+	@Autowired protected ActorFactory actorFactory;
 	@Autowired protected FuseChannelInitializer channelInitializer;
 	@Autowired protected ConfigSource configSource;
 	
@@ -48,13 +50,16 @@ public class FuseServerImpl implements FuseServer, InitializingBean, Application
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
+				
 		log.info("[fuse] Creating actor system");
-		this.actorSystem = ActorSystem.create("fuse", configSource.getConfig());
+		actorSystem = ActorSystem.create("fuse", configSource.getConfig());
 		
 		log.info("[fuse] Creating system logger");
-		this.actorSystem.actorOf(Props.create(SystemLogActor.class));
-
+		actorSystem.actorOf(Props.create(SystemLogActor.class));
+		
 		log.info("[fuse] Initializing routing");
+		actorFactory.setActorSystem(actorSystem);
+		configSource.parseLocalConfig();
 		// create router actor and pass the reference to channelInitializer
 		channelInitializer
 			.setRouter(

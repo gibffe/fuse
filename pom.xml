@@ -18,7 +18,7 @@
 		<netty.version>4.0.15.Final</netty.version>
 		<akka.version>2.2.3</akka.version>
 	</properties>
-	
+
 	<build>
 		<plugins>
 			<plugin>
@@ -78,7 +78,7 @@
 			<artifactId>slf4j-simple</artifactId>
 			<version>1.7.6</version>
 		</dependency>
-		
+
 		<!-- test -->
 		<dependency>
 			<groupId>junit</groupId>
@@ -96,6 +96,18 @@
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
 			<version>1.5.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<version>${spring.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.3.3</version>
 			<scope>test</scope>
 		</dependency>
 

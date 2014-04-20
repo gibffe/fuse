@@ -5,10 +5,8 @@ import io.netty.handler.codec.http.HttpRequest;
 
 import com.sulaco.fuse.config.route.Route;
 
-public interface FuseRequestMessage {
+public interface FuseRequestMessage extends Route {
 
-	Route getRoute();
-	
 	ChannelHandlerContext getChannelContext();
 	
 	HttpRequest getRequest();

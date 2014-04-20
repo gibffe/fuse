@@ -32,6 +32,22 @@ public class ActorFactoryImpl implements ActorFactory {
 	}
 	
 	@Override
+	public Optional<ActorRef> getLocalActor(String actorClass) {
+		
+		ActorRef actorRef = null;
+		
+		try {
+			final Class<?> clazz = validateClass(actorClass);
+			actorRef = system.actorOf(Props.create(clazz, ctx),	actorClass);
+		}
+		catch (Exception ex) {
+			log.error("Error creating actor:{}", actorClass, ex);	
+		}
+		
+		return Optional.ofNullable(actorRef);
+	}
+	
+	@Override
 	public Optional<ActorRef> getLocalActorByRef(String ref) {
 		return Optional.ofNullable(cache.get(ref));
 	}
@@ -43,8 +59,7 @@ public class ActorFactoryImpl implements ActorFactory {
 		
 		try {
 			// preconditions check
-			final Class<?> clazz = Class.forName(actorClass);
-			clazz.getConstructor(ApplicationContext.class);
+			final Class<?> clazz = validateClass(actorClass);
 
 			if (spinCount < 0) {
 				// never cache for negative spin, always return fresh actor shell
@@ -105,6 +120,13 @@ public class ActorFactoryImpl implements ActorFactory {
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.ctx = applicationContext;
+	}
+	
+	private Class<?> validateClass(String actorClass) throws Exception {
+		final Class<?> clazz = Class.forName(actorClass);
+		clazz.getConstructor(ApplicationContext.class);
+		
+		return clazz;
 	}
 	
 	private static final Logger log = LoggerFactory.getLogger(ActorFactoryImpl.class);

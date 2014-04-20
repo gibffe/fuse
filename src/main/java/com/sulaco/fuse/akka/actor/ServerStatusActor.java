@@ -10,9 +10,12 @@ public class ServerStatusActor extends FuseActor {
 		super(ctx);
 	}
 
-	@Override
-	protected void onReceive(FuseRequestMessage message) {
+	protected void serverStatus(FuseRequestMessage message) {
 
+	}
+
+	protected void vmStatus(FuseRequestMessage message) {
+		
 	}
 	
 }
