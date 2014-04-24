@@ -1,10 +1,10 @@
 package com.sulaco.fuse.config.route;
 
 import static org.assertj.core.api.Assertions.*;
-
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import io.netty.handler.codec.http.HttpMethod;
 
 import java.util.Optional;
 
@@ -82,14 +82,15 @@ public class RoutesConfigImplTest {
 				   			 .children.get("rest")
 				   			 .handler.isPresent()
 			).isFalse();
-			
+				
 			assertThat(
 				instance.root.children.get("simple")
-				             .children.get("rest")
-				             .children.get("path")
-				             .handler.isPresent()
-					
-			).isTrue();
+							 .children.get("rest")
+							 .children.get("path")
+							 .handler
+							 .get()
+							 .getHttpMethod()
+			).isEqualTo(HttpMethod.POST);
 			
 			// assert /simple/rest/<uid>
 			assertThat(
@@ -102,8 +103,10 @@ public class RoutesConfigImplTest {
 				instance.root.children.get("simple")
 							 .children.get("rest")
 							 .children.get("*")
-							 .handler.isPresent()
-			).isTrue();
+							 .handler
+							 .get()
+							 .getHttpMethod()
+			).isEqualTo(HttpMethod.GET);
 			
 			// assert /test/<uid>/delete
 			assertThat(
@@ -116,8 +119,10 @@ public class RoutesConfigImplTest {
 					instance.root.children.get("test")
 								 .children.get("*")
 								 .children.get("delete")
-								 .handler.isPresent()
-			).isTrue();
+								 .handler
+								 .get()
+								 .getHttpMethod()
+			).isEqualTo(HttpMethod.DELETE);
 			
 			// assert /simple/actor
 			assertThat(
