@@ -13,30 +13,43 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders.Values;
+import io.netty.handler.codec.http.HttpResponseStatus;
 
 import java.lang.reflect.Method;
 import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 import akka.actor.ActorSelection;
 import akka.actor.UntypedActor;
 
+import com.codahale.metrics.Timer;
+import com.google.gson.Gson;
 import com.sulaco.fuse.akka.FuseRequestMessage;
 import com.sulaco.fuse.akka.syslog.SystemLogMessage;
 import com.sulaco.fuse.akka.syslog.SystemLogMessage.LogLevel;
 import com.sulaco.fuse.akka.syslog.SystemLogMessage.LogMessageBuilder;
 import com.sulaco.fuse.config.route.RouteHandler;
+import com.sulaco.fuse.metrics.MetricsRegistry;
 
 public abstract class FuseActor extends UntypedActor {
 
-	private ActorSelection logger;
+	protected Gson gson;
 	
+	private ActorSelection logger;
+		
 	protected ApplicationContext ctx;
 	
+	protected Timer meter;
+	
+	@Autowired protected MetricsRegistry metrics;
+	
+	
 	public FuseActor() {		
+		this.gson = new Gson();
 		this.logger = getContext().actorSelection("/user/logger");
 	}
 	
@@ -44,18 +57,34 @@ public abstract class FuseActor extends UntypedActor {
 		this();
 		this.ctx = ctx;
 		
-		ctx.getAutowireCapableBeanFactory()
-		   .autowireBean(this);
+		if (ctx != null) {
+			ctx.getAutowireCapableBeanFactory()
+			   .autowireBean(this);
+			
+			meter = metrics.getRegistry().timer(getClass().getName());
+		}
 	}
 	
 	@Override
 	public void onReceive(Object message) throws Exception {
-
-		if (message instanceof FuseRequestMessage) {
-			onReceive((FuseRequestMessage) message);
+		Timer.Context context = null;
+		try {
+			context = meter.time();
+			
+			if (message instanceof FuseRequestMessage) {
+				onReceive((FuseRequestMessage) message);
+			}
+			else {
+				unhandled(message);
+			}
 		}
-		else {
+		catch (Exception ex) {
 			unhandled(message);
+		}
+		finally {
+			if (context != null) {
+				context.stop();
+			}
 		}
 	}
 	
@@ -84,16 +113,23 @@ public abstract class FuseActor extends UntypedActor {
 			log.warn("[fuse] No handling method specified. Override onReceive. x_x");
 		}
 	}
+
+	protected void respond(FuseRequestMessage message, Object content) {
+		this.respond(message, gson.toJson(content));
+	}
 	
-	// simple json response helper method
 	protected void respond(FuseRequestMessage message, String content) {
+		this.respond(message, OK, content);
+	}
+	
+	protected void respond(FuseRequestMessage message, HttpResponseStatus status, String content) {
 		
 		boolean keepAlive = isKeepAlive(message.getRequest());
         
 		FullHttpResponse response 
 			= new DefaultFullHttpResponse(
 								HTTP_1_1, 
-								OK, 
+								status, 
 								Unpooled.wrappedBuffer(content.getBytes())
 			  );
 		
@@ -120,7 +156,15 @@ public abstract class FuseActor extends UntypedActor {
         
         message.getChannelContext().flush();
 	}
-	
+
+	@Override
+	public void unhandled(Object message) {
+		super.unhandled(message);
+		if (message instanceof FuseRequestMessage) {
+			respond((FuseRequestMessage) message, HttpResponseStatus.BAD_REQUEST, BAD_REQUEST);
+		}
+	}
+
 	protected void info(String message) {
 		
 		LogMessageBuilder builder = SystemLogMessage.builder();
@@ -133,6 +177,7 @@ public abstract class FuseActor extends UntypedActor {
 		logger.tell(logmessage, getSelf());
 	}
 	
+	public static final String BAD_REQUEST = "{x_x}";
 	public static final String APP_JSON = "application/json";
 	public static final String VERSION  = "Fuse v0.0.1-SNAPSHOT";
 	

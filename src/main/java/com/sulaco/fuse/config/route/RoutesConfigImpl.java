@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,13 +20,15 @@ import org.springframework.util.StringUtils;
 
 import akka.actor.ActorRef;
 import static com.sulaco.fuse.util.Tools.*;
+
 import com.sulaco.fuse.config.ConfigSource;
 import com.sulaco.fuse.config.actor.ActorFactory;
+import com.sulaco.fuse.config.route.RouteHandler.RouteHandlerBuilder;
 import com.sulaco.fuse.config.route.RouteSegment.RouteSegmentBuilder;
 import com.typesafe.config.ConfigValue;
 
 @Component
-@SuppressWarnings({"unchecked","unused"})
+@SuppressWarnings({"unchecked"})
 public class RoutesConfigImpl implements RoutesConfig {
 
 	@Autowired ActorFactory factory;
@@ -87,14 +91,14 @@ public class RoutesConfigImpl implements RoutesConfig {
 	protected void processRouteEntry(Entry<String, ConfigValue> entry) {
 	
 		// process actor definition
-		Optional<RouteHandler> handler = processActorDefinition(entry.getValue());
+		Optional<RouteHandlerBuilder> builder = processActorDefinition(entry.getValue());
 		
 		// process path definition
-		processPathDefinition(entry.getKey(), handler); 
+		processPathDefinition(entry.getKey(), builder); 
 
 	}
 	
-	protected Optional<RouteHandler> processActorDefinition(ConfigValue cvalue) {
+	protected Optional<RouteHandlerBuilder> processActorDefinition(ConfigValue cvalue) {
 		
 		try {
 			// extract actor definition
@@ -118,11 +122,10 @@ public class RoutesConfigImpl implements RoutesConfig {
 			}
 
 			return Optional.ofNullable(
-					new RouteHandler(
-							ref, 
-							methodName
-						)
-					);
+					RouteHandler.builder()
+							    .withActorRef(ref)
+							    .withMethodName(methodName)
+			);
 		}
 		catch (Exception ex) {
 			log.warn("Error parsing actor definition: "+cvalue.render());
@@ -132,24 +135,36 @@ public class RoutesConfigImpl implements RoutesConfig {
 	}
 
 	
-	protected void processPathDefinition(String path, Optional<RouteHandler> handler) {
+	protected void processPathDefinition(String path, Optional<RouteHandlerBuilder> handlerBuilder) {
 
-		if (handler.isPresent()) {
+		if (handlerBuilder.isPresent()) {
 			RouteSegment segment = root;
 			RouteSegmentBuilder builder = RouteSegment.builder();
 	
-			String[] split = path.split("/");
+			Matcher matcher = pathPattern.matcher(path);
+			if (matcher.matches()) {
+			
+				RouteHandler handler 
+					= handlerBuilder.get()
+									.withHttpMethod(matcher.group(1))
+									.build();
+													 
+				String[] split = matcher.group(3).split("/");
+		
+				// convert REST URI segments to stream & process one by one
+				Iterator<String> it = Arrays.stream(split).iterator();
 	
-			// convert REST URI segments to stream & process one by one
-			Iterator<String> it = Arrays.stream(split).iterator();
-
-			it.next();
-			while (it.hasNext()) {
-				String value = it.next();
-				segment = processSegment(value, it.hasNext(), builder, segment, handler.get());
-				saveSegment(segment);
-				
-				builder.reset();
+				it.next();
+				while (it.hasNext()) {
+					String value = it.next();
+					segment = processSegment(value, it.hasNext(), builder, segment, handler);
+					saveSegment(segment);
+					
+					builder.reset();
+				}
+			}
+			else {
+				log.warn("{} is not a valid path definition", path);
 			}
 		}
 	}
@@ -280,6 +295,8 @@ public class RoutesConfigImpl implements RoutesConfig {
 			return null;
 		}
 	}
+	
+	private static final Pattern pathPattern = Pattern.compile("^(OPTIONS|GET|HEAD|POST|PUT|DELETE|TRACE|CONNECT|PATCH)*([ ]*)(/.*)$");
 	
 	private static final Logger log = LoggerFactory.getLogger(RoutesConfigImpl.class);
 
