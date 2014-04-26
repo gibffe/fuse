@@ -1,8 +1,10 @@
 package com.sulaco.fuse.akka;
 
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
 
+import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Optional;
 
@@ -54,8 +56,15 @@ public class FuseRequestMessageImpl implements FuseRequestMessage {
 		return route.getParam(name);
 	}
 	
+	@Override
+	public String getRequestBody() {
+		return ((DefaultFullHttpRequest) incomingRequest).content().toString(charset_utf8);
+	}
+
 	public void setRoute(Route route) {
 		this.route = route;
 	}
+	
+	private static final Charset charset_utf8 = Charset.forName("UTF-8");
 	
 }
