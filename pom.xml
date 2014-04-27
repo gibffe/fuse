@@ -15,7 +15,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<spring.version>4.0.2.RELEASE</spring.version>
-		<netty.version>4.0.15.Final</netty.version>
+		<netty.version>4.0.18.Final</netty.version>
 		<akka.version>2.2.3</akka.version>
 		<metrics.version>3.0.2</metrics.version>
 	</properties>

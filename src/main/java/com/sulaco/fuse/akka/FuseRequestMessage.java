@@ -13,4 +13,6 @@ public interface FuseRequestMessage extends Route {
 	
 	FuseRequestContext getContext();
 	
+	String getRequestBody();
+	
 }
