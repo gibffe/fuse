@@ -1,12 +1,14 @@
 package com.sulaco.fuse.akka.actor;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
+import com.sulaco.fuse.FuseVersion;
 import com.sulaco.fuse.akka.FuseRequestMessage;
 
 public class ServerVersionActor extends FuseActor {
 
-	private static final String ECHO = "{ \"version\" : \"" + VERSION + "\" }";
+	@Autowired FuseVersion version;
 	
 	public ServerVersionActor(ApplicationContext ctx) {
 		super(ctx);
@@ -14,7 +16,7 @@ public class ServerVersionActor extends FuseActor {
 	
 	@Override
 	protected void onReceive(FuseRequestMessage message) {
-		respond(message, ECHO);
+		proto.respond(message, version);
 	}
 
 }

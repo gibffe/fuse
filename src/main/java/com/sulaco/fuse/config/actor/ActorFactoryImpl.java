@@ -118,6 +118,11 @@ public class ActorFactoryImpl implements ActorFactory {
 	}
 	
 	@Override
+	public ActorSystem getActorSystem() {
+		return this.system;
+	}
+
+	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.ctx = applicationContext;
 	}

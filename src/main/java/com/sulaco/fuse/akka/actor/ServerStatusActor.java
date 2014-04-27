@@ -33,7 +33,7 @@ public class ServerStatusActor extends FuseActor {
 			}
 		}
 		
-		respond(message, stats);
+		proto.respond(message, stats);
 	}
 	
 	protected void fillStats(Map<String, Object> stats, Timer timer) {
