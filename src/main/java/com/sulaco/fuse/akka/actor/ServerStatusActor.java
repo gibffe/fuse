@@ -8,9 +8,9 @@ import org.springframework.context.ApplicationContext;
 
 import com.codahale.metrics.Snapshot;
 import com.codahale.metrics.Timer;
-import com.sulaco.fuse.akka.FuseRequestMessage;
+import com.sulaco.fuse.akka.message.FuseRequestMessage;
 
-public class ServerStatusActor extends FuseActor {
+public class ServerStatusActor extends FuseEndpointActor {
 
 	public ServerStatusActor(ApplicationContext ctx) {
 		super(ctx);

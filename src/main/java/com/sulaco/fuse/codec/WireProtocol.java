@@ -1,8 +1,12 @@
 package com.sulaco.fuse.codec;
 
+import java.nio.ByteBuffer;
+import java.util.Map;
+import java.util.Optional;
+
 import io.netty.handler.codec.http.HttpResponseStatus;
 
-import com.sulaco.fuse.akka.FuseRequestMessage;
+import com.sulaco.fuse.akka.message.FuseRequestMessage;
 
 public interface WireProtocol {
 	
@@ -11,6 +15,8 @@ public interface WireProtocol {
 	public void respond(FuseRequestMessage message, Object object);
 	
 	public void respond(FuseRequestMessage message, String content);
+	
+	public void respondRaw(FuseRequestMessage message, HttpResponseStatus status, ByteBuffer data, Map<String, String> headers);
 	
 	
 	public void error(FuseRequestMessage message);
@@ -24,5 +30,5 @@ public interface WireProtocol {
 	public void error(FuseRequestMessage message, HttpResponseStatus status, String content);
 	
 	
-	public <T> T read(FuseRequestMessage message, Class<T> clazz);
+	public <T> Optional<T> read(FuseRequestMessage message, Class<T> clazz);
 }

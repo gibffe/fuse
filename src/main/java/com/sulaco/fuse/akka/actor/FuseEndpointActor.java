@@ -10,23 +10,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
-import akka.actor.ActorSelection;
-import akka.actor.UntypedActor;
-
 import com.codahale.metrics.Timer;
-import com.sulaco.fuse.akka.FuseRequestMessage;
-import com.sulaco.fuse.akka.syslog.SystemLogMessage;
-import com.sulaco.fuse.akka.syslog.SystemLogMessage.LogLevel;
-import com.sulaco.fuse.akka.syslog.SystemLogMessage.LogMessageBuilder;
+import com.sulaco.fuse.akka.message.FuseRequestMessage;
 import com.sulaco.fuse.codec.WireProtocol;
 import com.sulaco.fuse.config.route.RouteHandler;
 import com.sulaco.fuse.metrics.MetricsRegistry;
 
-public abstract class FuseActor extends UntypedActor {
-
-	private ActorSelection logger;
-		
-	protected ApplicationContext ctx;
+public abstract class FuseEndpointActor extends FuseBaseActor {
 	
 	protected Timer meter;
 	
@@ -35,18 +25,14 @@ public abstract class FuseActor extends UntypedActor {
 	@Autowired protected WireProtocol proto;
 	
 	
-	public FuseActor() {		
-		this.logger = getContext().actorSelection("/user/logger");
+	public FuseEndpointActor() {
+		super();
 	}
 	
-	public FuseActor(ApplicationContext ctx) {
-		this();
-		this.ctx = ctx;
+	public FuseEndpointActor(ApplicationContext ctx) {
+		super(ctx);
 		
 		if (ctx != null) {
-			ctx.getAutowireCapableBeanFactory()
-			   .autowireBean(this);
-			
 			meter = metrics.getRegistry().timer(getClass().getName());
 		}
 	}
@@ -58,13 +44,14 @@ public abstract class FuseActor extends UntypedActor {
 			context = meter.time();
 			
 			if (message instanceof FuseRequestMessage) {
-				onReceive((FuseRequestMessage) message);
+				onRequest((FuseRequestMessage) message);
 			}
 			else {
-				unhandled(message);
+				super.onReceive(message);
 			}
 		}
 		catch (Exception ex) {
+			log.error("Error handling request !", ex);
 			unhandled(message);
 		}
 		finally {
@@ -74,9 +61,9 @@ public abstract class FuseActor extends UntypedActor {
 		}
 	}
 	
-	protected void onReceive(final FuseRequestMessage message) {
+	protected void onRequest(final FuseRequestMessage request) {
 		
-		RouteHandler rhandler = ((FuseRequestMessage) message).getHandler();
+		RouteHandler rhandler = request.getHandler();
 		
 		Optional<String> method = rhandler.getMethodName();
 		
@@ -88,7 +75,7 @@ public abstract class FuseActor extends UntypedActor {
 			if (target.isPresent()) {
 				try {
 					target.get()
-						  .invoke(this, message);
+						  .invoke(this, request);
 				}
 				catch (Exception ex) {
 					log.warn("[fuse] Invocation failure. x_x", ex);
@@ -100,6 +87,8 @@ public abstract class FuseActor extends UntypedActor {
 		}
 	}
 	
+	
+	
 	@Override
 	public void unhandled(Object message) {
 		super.unhandled(message);
@@ -108,18 +97,5 @@ public abstract class FuseActor extends UntypedActor {
 		}
 	}
 
-	protected void info(String message) {
-		
-		LogMessageBuilder builder = SystemLogMessage.builder();
-		
-		SystemLogMessage logmessage 
-			= builder.withLevel(LogLevel.INFO)
-					 .withMessage(message)
-					 .build();
-		
-		logger.tell(logmessage, getSelf());
-	}
-
-	
-	protected static final Logger log = LoggerFactory.getLogger(FuseActor.class);
+	protected static final Logger log = LoggerFactory.getLogger(FuseEndpointActor.class);
 }

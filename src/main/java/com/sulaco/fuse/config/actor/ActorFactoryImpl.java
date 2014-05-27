@@ -33,6 +33,11 @@ public class ActorFactoryImpl implements ActorFactory {
 	
 	@Override
 	public Optional<ActorRef> getLocalActor(String actorClass) {
+		return getLocalActor(actorClass, actorClass);
+	}
+
+	@Override
+	public Optional<ActorRef> getLocalActor(String actorClass, String actorName) {
 		
 		ActorRef actorRef = null;
 		
@@ -54,6 +59,11 @@ public class ActorFactoryImpl implements ActorFactory {
 	
 	@Override
 	public Optional<ActorRef> getLocalActor(String ref, String actorClass, int spinCount) {
+		return getLocalActor(ref, actorClass, ref, spinCount);
+	}
+
+	@Override
+	public Optional<ActorRef> getLocalActor(String ref, String actorClass, String actorName, int spinCount) {
 		
 		ActorRef actorRef = null;
 		
@@ -63,7 +73,7 @@ public class ActorFactoryImpl implements ActorFactory {
 
 			if (spinCount < 0) {
 				// never cache for negative spin, always return fresh actor shell
-				actorRef = system.actorOf(Props.create(clazz, ctx),	actorClass);		
+				actorRef = system.actorOf(Props.create(clazz, ctx),	actorName);		
 			}
 			else {
 				actorRef 
@@ -73,7 +83,7 @@ public class ActorFactoryImpl implements ActorFactory {
 							  if (spinCount == 1) {
 								  return system.actorOf(
 											Props.create(clazz, ctx), 
-											actorClass
+											actorName
 								  );
 							  }
 							  else {
@@ -82,7 +92,8 @@ public class ActorFactoryImpl implements ActorFactory {
 											Props.empty()
 											 	 .withRouter(
 											         RoundRobinRouter.create(routees(ref,clazz, spinCount))
-											     )
+											     ),
+											actorName
 								  );
 							  }
 						  }

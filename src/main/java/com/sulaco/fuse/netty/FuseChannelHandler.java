@@ -5,7 +5,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.HttpRequest;
 import akka.actor.ActorRef;
 
-import com.sulaco.fuse.akka.FuseRequestMessageImpl;
+import com.sulaco.fuse.akka.message.FuseRequestMessageImpl;
 
 /**
  * Incoming requests are handled by a router actor - it will use a fixed pool of

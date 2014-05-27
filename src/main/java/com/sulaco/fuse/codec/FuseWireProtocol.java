@@ -13,11 +13,16 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders.Values;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
+import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.sulaco.fuse.FuseVersion;
-import com.sulaco.fuse.akka.FuseRequestMessage;
+import com.sulaco.fuse.akka.message.FuseRequestMessage;
 
 @Component
 public class FuseWireProtocol implements WireProtocol {
@@ -25,6 +30,15 @@ public class FuseWireProtocol implements WireProtocol {
 	@Autowired WireCodec codec;
 	
 	@Autowired FuseVersion version;
+	
+	Map<String, String> defaultHeaders;
+	
+	public FuseWireProtocol() {
+		super();
+		defaultHeaders = new HashMap<>();
+		defaultHeaders.put(SERVER       , version.toString());
+		defaultHeaders.put(CONTENT_TYPE , APP_JSON);
+	}
 	
 	@Override
 	public void ok(FuseRequestMessage message) {
@@ -68,45 +82,57 @@ public class FuseWireProtocol implements WireProtocol {
 	}
 
 	@Override
-	public <T> T read(FuseRequestMessage request, Class<T> clazz) {
-		return codec.getObject(request.getRequestBody(), clazz);
+	public <T> Optional<T> read(FuseRequestMessage request, Class<T> clazz) {
+		return Optional.ofNullable(
+				codec.getObject(request.getRequestBody(), clazz)
+		);
 	}
 
 	protected void respond(FuseRequestMessage message, HttpResponseStatus status, String content) {
-		
-		boolean keepAlive = isKeepAlive(message.getRequest());
-        
-		FullHttpResponse response 
-			= new DefaultFullHttpResponse(
-								HTTP_1_1, 
-								status, 
-								Unpooled.wrappedBuffer(content.getBytes())
-			  );
-		
-		response.headers().set(SERVER         , version);
-        response.headers().set(CONTENT_TYPE   , APP_JSON);
-        response.headers().set(CONTENT_LENGTH , response.content().readableBytes());
-
-        if (!keepAlive) {
-            message.getChannelContext()
-            	   .write(response)
-                   .addListener(ChannelFutureListener.CLOSE);
-        } 
-        else {
-            response.headers()
-                    .set(
-                    		CONNECTION, 
-                    		Values.KEEP_ALIVE
-                    );
-            
-            message.getChannelContext()
-                   .channel()
-                   .write(response);
-        }
-        
-        message.getChannelContext().flush();
+		respondRaw(message, status, ByteBuffer.wrap(content.getBytes()), defaultHeaders);
 	}
 	
+	@Override
+	public void respondRaw(FuseRequestMessage message, HttpResponseStatus status, ByteBuffer data, Map<String, String> headers) {
+		if (!message.flushed()) {
+			boolean keepAlive = isKeepAlive(message.getRequest());
+	        
+			FullHttpResponse response 
+				= new DefaultFullHttpResponse(
+									HTTP_1_1, 
+									status, 
+									Unpooled.wrappedBuffer(data)
+				  );
+			
+	        response.headers().set(CONTENT_LENGTH , response.content().readableBytes());
+	        
+	        for (Map.Entry<String, String> entry : headers.entrySet()) {
+	        	response.headers().set(entry.getKey(), entry.getValue());
+	        }
+	
+	        if (!keepAlive) {
+	            message.getChannelContext()
+	            	   .write(response)
+	                   .addListener(ChannelFutureListener.CLOSE);
+	        } 
+	        else {
+	            response.headers()
+	                    .set(
+	                    		CONNECTION, 
+	                    		Values.KEEP_ALIVE
+	                    );
+	            
+	            message.getChannelContext()
+	                   .channel()
+	                   .write(response);
+	        }
+	        
+	        message.flush();
+		}
+	}
+
+
+
 	public static final String OK          = "";
 	public static final String BAD_REQUEST = "{x_x}";
 	public static final String APP_JSON    = "application/json";

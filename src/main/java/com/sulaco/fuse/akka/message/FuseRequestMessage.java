@@ -1,4 +1,4 @@
-package com.sulaco.fuse.akka;
+package com.sulaco.fuse.akka.message;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpRequest;
@@ -10,9 +10,11 @@ public interface FuseRequestMessage extends Route {
 	ChannelHandlerContext getChannelContext();
 	
 	HttpRequest getRequest();
-	
-	FuseRequestContext getContext();
-	
+		
 	String getRequestBody();
+	
+	void flush();
+	
+	boolean flushed();
 	
 }
