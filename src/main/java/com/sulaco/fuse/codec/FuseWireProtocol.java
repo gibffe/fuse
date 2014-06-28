@@ -24,6 +24,8 @@ import org.springframework.stereotype.Component;
 import com.sulaco.fuse.FuseVersion;
 import com.sulaco.fuse.akka.message.FuseRequestMessage;
 
+import javax.annotation.PostConstruct;
+
 @Component
 public class FuseWireProtocol implements WireProtocol {
 
@@ -33,8 +35,8 @@ public class FuseWireProtocol implements WireProtocol {
 	
 	Map<String, String> defaultHeaders;
 	
-	public FuseWireProtocol() {
-		super();
+	@PostConstruct
+	public void init() {
 		defaultHeaders = new HashMap<>();
 		defaultHeaders.put(SERVER       , version.toString());
 		defaultHeaders.put(CONTENT_TYPE , APP_JSON);
