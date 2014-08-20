@@ -5,7 +5,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.HttpRequest;
 import akka.actor.ActorRef;
 
-import com.sulaco.fuse.akka.FuseRequestMessageImpl;
+import com.sulaco.fuse.akka.message.FuseRequestMessageImpl;
 
 /**
  * Incoming requests are handled by a router actor - it will use a fixed pool of
@@ -31,32 +31,11 @@ public class FuseChannelHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof HttpRequest) {
-            
+
         	router.tell(
         		new FuseRequestMessageImpl(ctx, (HttpRequest) msg),
         		null
         	);
- 
-        	/*
-        	HttpRequest req = (HttpRequest) msg;
-
-            
-            
-            if (is100ContinueExpected(req)) {
-                ctx.write(new DefaultFullHttpResponse(HTTP_1_1, CONTINUE));
-            }
-            boolean keepAlive = isKeepAlive(req);
-            FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(CONTENT));
-            response.headers().set(CONTENT_TYPE, "text/plain");
-            response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
-
-            if (!keepAlive) {
-                ctx.write(response).addListener(ChannelFutureListener.CLOSE);
-            } else {
-                response.headers().set(CONNECTION, Values.KEEP_ALIVE);
-                ctx.write(response);
-            }
-            */
         }
     }
 

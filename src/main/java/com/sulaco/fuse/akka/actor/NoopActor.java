@@ -2,16 +2,16 @@ package com.sulaco.fuse.akka.actor;
 
 import org.springframework.context.ApplicationContext;
 
-import com.sulaco.fuse.akka.FuseRequestMessage;
+import com.sulaco.fuse.akka.message.FuseRequestMessage;
 
-public class NoopActor extends FuseActor {
+public class NoopActor extends FuseEndpointActor {
 
 	public NoopActor(ApplicationContext ctx) {
 		super(ctx);
 	}
 
 	@Override
-	protected void onReceive(FuseRequestMessage message) {
+	protected void onRequest(FuseRequestMessage message) {
 		
 	}
 

@@ -1,4 +1,4 @@
-package com.sulaco.fuse.akka;
+package com.sulaco.fuse.akka.message;
 
 import java.util.Optional;
 import java.util.Set;
@@ -7,8 +7,10 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings("unchecked")
-public class FuseRequestContextImpl implements FuseRequestContext {
+public class FuseMessageContextImpl implements FuseMessageContext {
 
+	private Optional<FuseRequestMessage> request;
+	
 	private ConcurrentMap<String, Object> context = new ConcurrentHashMap<>();
 	
 	@Override
@@ -43,13 +45,36 @@ public class FuseRequestContextImpl implements FuseRequestContext {
 	}
 
 	@Override
-	public void put(String key, Object value) {
+	public FuseMessageContext put(String key, Object value) {
 		context.put(key, value);
+		return this;
+	}
+	
+	@Override
+	public FuseMessageContext put(String key, Optional<Object> value) {
+		value.ifPresent(
+			val -> {
+				put(key, val);
+			}
+		);
+		return this;
 	}
 
 	@Override
 	public Set<String> keys() {
 		return context.keySet();
 	}
+
+	@Override
+	public void setRequest(FuseRequestMessage request) {
+		this.request = Optional.ofNullable(request);
+	}
+
+	@Override
+	public Optional<FuseRequestMessage> getRequest() {
+		return this.request;
+	}
+	
+	
 
 }

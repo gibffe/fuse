@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.*;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,15 +34,24 @@ public class FuseServerImplTest {
 	}
 	
 	@Test
-	public void testEcho() throws Exception {
+	public void testVersion() throws Exception {
 		
 		HttpClient client = getHttpClient();
 		
 		// when
-		HttpResponse response = client.execute(new HttpGet("http://localhost:8080/fuse/echo"));
+		HttpResponse response = client.execute(new HttpGet("http://localhost:8080/fuse/version"));
 		
 		// then
 		assertThat(response).isNotNull();
+	}
+	
+	@Test
+	public void testPostVersion() throws Exception {
+		
+		HttpClient client = getHttpClient();
+		
+		// when
+		HttpResponse response = client.execute(new HttpPost("http://localhost:8080/fuse/version"));
 	}
 
 }

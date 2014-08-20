@@ -47,7 +47,7 @@ public class FuseChannelInitializer extends ChannelInitializer<SocketChannel> {
 	
 	protected void addDefaultHandlerStack(ChannelPipeline pipeline) {
 		pipeline.addLast("decoder"       , new HttpRequestDecoder());
-        pipeline.addLast("aggregator"    , new HttpObjectAggregator(65536));
+        pipeline.addLast("aggregator"    , new HttpObjectAggregator(66560));
         pipeline.addLast("encoder"       , new HttpResponseEncoder());
         pipeline.addLast("chunkedWriter" , new ChunkedWriteHandler());
 	}
