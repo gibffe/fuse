@@ -1,4 +1,4 @@
-package com.sulaco.fuse.akka;
+package com.sulaco.fuse.akka.message;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
@@ -17,9 +17,9 @@ public class FuseRequestMessageImpl implements FuseRequestMessage {
 	
 	HttpRequest incomingRequest;
 	
-	FuseRequestContext requestContext;
-
 	Route route;
+	
+	volatile boolean flushed = false;
 	
 	public FuseRequestMessageImpl(ChannelHandlerContext context, HttpRequest request) {
 		this.channelContext  = context;
@@ -34,11 +34,6 @@ public class FuseRequestMessageImpl implements FuseRequestMessage {
 	@Override
 	public HttpRequest getRequest() {
 		return incomingRequest;
-	}
-
-	@Override
-	public FuseRequestContext getContext() {
-		return requestContext;
 	}
 
 	@Override
@@ -65,6 +60,17 @@ public class FuseRequestMessageImpl implements FuseRequestMessage {
 		this.route = route;
 	}
 	
+	@Override
+	public void flush() {
+		channelContext.flush();
+		flushed = true;
+	}
+
+	@Override
+	public boolean flushed() {
+		return flushed;
+	}
+
 	private static final Charset charset_utf8 = Charset.forName("UTF-8");
 	
 }

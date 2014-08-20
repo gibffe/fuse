@@ -5,17 +5,21 @@ import io.netty.handler.codec.http.HttpMethod;
 import java.util.Optional;
 
 
+
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 
-import com.sulaco.fuse.akka.FuseRequestMessage;
-import com.sulaco.fuse.akka.FuseRequestMessageImpl;
+
+
+import com.sulaco.fuse.akka.message.FuseRequestMessage;
+import com.sulaco.fuse.akka.message.FuseRequestMessageImpl;
 import com.sulaco.fuse.config.route.Route;
 import com.sulaco.fuse.config.route.RoutesConfig;
 
 
-public class RouteFinderActor extends FuseActor {
+public class RouteFinderActor extends FuseEndpointActor {
 
 	@Autowired protected RoutesConfig routes;
 	
@@ -24,7 +28,7 @@ public class RouteFinderActor extends FuseActor {
 	}
 
 	@Override
-	protected void onReceive(final FuseRequestMessage message) {
+	protected void onRequest(final FuseRequestMessage message) {
 		
 		String uri = message.getRequest().getUri();
 		

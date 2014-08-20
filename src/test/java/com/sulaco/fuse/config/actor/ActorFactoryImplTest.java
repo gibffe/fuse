@@ -61,9 +61,8 @@ public class ActorFactoryImplTest {
 	
 		assertThat(instance.cache.containsKey("foo"));
 		assertThat(instance.getLocalActorByRef("foo").isPresent()).isTrue();
-		
-		verify(system, times(1)).actorOf(any(Props.class));
-		verify(system, times(2)).actorOf(any(Props.class), anyString());
+
+		verify(system, times(3)).actorOf(any(Props.class), anyString());
 	}
 	
 	@Test

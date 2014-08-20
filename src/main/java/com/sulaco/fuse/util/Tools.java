@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.sulaco.fuse.akka.FuseRequestMessage;
+import com.sulaco.fuse.akka.message.FuseRequestMessage;
 
 public class Tools {
 

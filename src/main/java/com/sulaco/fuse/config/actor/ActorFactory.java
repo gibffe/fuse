@@ -12,7 +12,11 @@ public interface ActorFactory extends ActorSystemAware, ApplicationContextAware 
 
 	public Optional<ActorRef> getLocalActor(String actorClass);
 	
+	public Optional<ActorRef> getLocalActor(String actorClass, String actorName);
+	
 	public Optional<ActorRef> getLocalActor(String ref, String actorClass, int spinCount);
+	
+	public Optional<ActorRef> getLocalActor(String ref, String actorClass, String actorName, int spinCount);
 	
 	public Optional<ActorRef> getLocalActorByRef(String ref);
 	
