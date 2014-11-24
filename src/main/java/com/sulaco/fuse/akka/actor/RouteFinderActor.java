@@ -5,8 +5,7 @@ import io.netty.handler.codec.http.HttpMethod;
 import java.util.Optional;
 
 
-
-
+import io.netty.handler.codec.http.HttpResponseStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
@@ -33,31 +32,34 @@ public class RouteFinderActor extends FuseEndpointActor {
 		String uri = message.getRequest().getUri();
 		
 		Optional<Route> route = routes.getFuseRoute(uri);
-		
-		route.ifPresent(
-		    rte -> {
-		    	// add route to the message
-				((FuseRequestMessageImpl) message).setRoute(rte);
-				
-				// pass message to handling actor
-				rte.getHandler()
-				   .getActor()
-				   .ifPresent(
-				       handler -> {
-				    	   	  HttpMethod requested = message.getRequest().getMethod();
-				    	   	  HttpMethod supported = rte.getHandler().getHttpMethod();
-				    	   	  
-				    	   	  if (supported.compareTo(requested) == 0) {
-				    	   		  handler.tell(message, getSelf());  
-				    	   	  }
-				    	   	  else {
-				    	   		  info(requested +" not supported by " + uri.toString());
-				    	   		  unhandled(message);
-				    	   	  }
-				       }
-				   );	
-		    }
-		);
+
+        if (route.isPresent()) {
+            Route rte = route.get();
+
+            // add route to the message
+            ((FuseRequestMessageImpl) message).setRoute(rte);
+
+            // pass message to handling actor
+            rte.getHandler()
+               .getActor()
+               .ifPresent(
+                   handler -> {
+                       HttpMethod requested = message.getRequest().getMethod();
+                       HttpMethod supported = rte.getHandler().getHttpMethod();
+
+                       if (supported.compareTo(requested) == 0) {
+                           handler.tell(message, getSelf());
+                       }
+                       else {
+                           info(requested +" not supported by " + uri.toString());
+                           unhandled(message);
+                       }
+                   }
+               );
+        }
+        else {
+            unhandled(message);
+        }
 	}
 
 	public void setRoutes(RoutesConfig routes) {
