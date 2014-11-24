@@ -88,7 +88,7 @@ public class FuseServerImpl implements FuseServer, InitializingBean, Application
 		log.info("[fuse] Starting netty...");
 		
 		Config config = configSource.getConfig();
-		
+
 		EventLoopGroup bossGroup   = new NioEventLoopGroup(config.getInt("netty.boss.eventloop.threads"));
         EventLoopGroup workerGroup = new NioEventLoopGroup(config.getInt("netty.work.eventloop.threads"));
         
