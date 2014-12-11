@@ -1,6 +1,7 @@
 package com.sulaco.fuse.codec;
 
 import java.nio.ByteBuffer;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
 
@@ -12,12 +13,15 @@ public interface WireProtocol {
 	
 	public void ok(FuseRequestMessage message);
 
-	public void respond(FuseRequestMessage message, Object object);
+
+    public void respond(FuseRequestMessage message, Object object);
 	
 	public void respond(FuseRequestMessage message, String content);
 	
 	public void respondRaw(FuseRequestMessage message, HttpResponseStatus status, ByteBuffer data, Map<String, String> headers);
-	
+
+    public void stream(FuseRequestMessage message, Path path);
+
 	
 	public void error(FuseRequestMessage message);
 	
@@ -29,6 +33,6 @@ public interface WireProtocol {
 
 	public void error(FuseRequestMessage message, HttpResponseStatus status, String content);
 	
-	
+
 	public <T> Optional<T> read(FuseRequestMessage message, Class<T> clazz);
 }

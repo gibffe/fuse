@@ -7,22 +7,29 @@ import static io.netty.handler.codec.http.HttpHeaders.Names.CONTENT_TYPE;
 import static io.netty.handler.codec.http.HttpHeaders.Names.SERVER;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.channel.*;
+import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.HttpHeaders.Values;
-import io.netty.handler.codec.http.HttpResponseStatus;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.*;
 
+import io.netty.handler.stream.ChunkedFile;
+import io.netty.handler.stream.ChunkedNioFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.sulaco.fuse.FuseVersion;
 import com.sulaco.fuse.akka.message.FuseRequestMessage;
+import org.springframework.util.FileSystemUtils;
 
 import javax.annotation.PostConstruct;
 
@@ -34,12 +41,17 @@ public class FuseWireProtocol implements WireProtocol {
 	@Autowired FuseVersion version;
 	
 	Map<String, String> defaultHeaders;
+
+    Set<OpenOption> readOptions;
 	
 	@PostConstruct
 	public void init() {
 		defaultHeaders = new HashMap<>();
 		defaultHeaders.put(SERVER       , version.toString());
 		defaultHeaders.put(CONTENT_TYPE , APP_JSON);
+
+        readOptions = new HashSet<>();
+        readOptions.add(StandardOpenOption.READ);
 	}
 	
 	@Override
@@ -120,8 +132,8 @@ public class FuseWireProtocol implements WireProtocol {
 	        else {
 	            response.headers()
 	                    .set(
-	                    		CONNECTION, 
-	                    		Values.KEEP_ALIVE
+	                        CONNECTION,
+	                    	Values.KEEP_ALIVE
 	                    );
 	            
 	            message.getChannelContext()
@@ -133,10 +145,51 @@ public class FuseWireProtocol implements WireProtocol {
 		}
 	}
 
+    @Override
+    public void stream(FuseRequestMessage message, Path path) {
 
+        if (!message.flushed()) {
+            ChannelHandlerContext ctx = message.getChannelContext();
+            HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.OK);
 
-	public static final String OK          = "";
+            long size = getFileSize(path);
+            response.headers().set(CONTENT_LENGTH, size);
+
+            ctx.write(response);
+
+            try {
+                ctx.write(
+                    new HttpChunkedInput(
+                        new ChunkedNioFile(path.toFile())
+                    )
+                );
+
+                ChannelFuture cfuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+
+                if (!isKeepAlive(message.getRequest())) {
+                    cfuture.addListener(ChannelFutureListener.CLOSE);
+                }
+            }
+            catch (Exception ex) {
+                log.error("Error streaming file !", ex);
+                ctx.close();
+            }
+        }
+    }
+
+    long getFileSize(Path path) {
+        try {
+            return Files.size(path);
+        }
+        catch (Exception ex) {
+            log.warn("Error getting file size ! {}", path, ex);
+            return -1;
+        }
+    }
+
+    public static final String OK          = "";
 	public static final String BAD_REQUEST = "{x_x}";
 	public static final String APP_JSON    = "application/json";
 
+    static final Logger log = LoggerFactory.getLogger(FuseWireProtocol.class);
 }

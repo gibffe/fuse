@@ -280,7 +280,7 @@ public class RoutesConfigImpl implements RoutesConfig {
 				current = next.get();
 			}
 			else {
-				return null;
+				break;
 			}
 		}
 		

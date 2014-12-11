@@ -17,7 +17,7 @@ public class ServerStatusActor extends FuseEndpointActor {
 	}
 
 	public void serverStatus(FuseRequestMessage message) {
-
+        actorStatus(message);
 	}
 
 	public void actorStatus(FuseRequestMessage message) {
