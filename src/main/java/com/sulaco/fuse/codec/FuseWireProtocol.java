@@ -42,16 +42,11 @@ public class FuseWireProtocol implements WireProtocol {
 	
 	Map<String, String> defaultHeaders;
 
-    Set<OpenOption> readOptions;
-	
 	@PostConstruct
 	public void init() {
 		defaultHeaders = new HashMap<>();
 		defaultHeaders.put(SERVER       , version.toString());
 		defaultHeaders.put(CONTENT_TYPE , APP_JSON);
-
-        readOptions = new HashSet<>();
-        readOptions.add(StandardOpenOption.READ);
 	}
 	
 	@Override
@@ -144,48 +139,6 @@ public class FuseWireProtocol implements WireProtocol {
 	        message.flush();
 		}
 	}
-
-    @Override
-    public void stream(FuseRequestMessage message, Path path) {
-
-        if (!message.flushed()) {
-            ChannelHandlerContext ctx = message.getChannelContext();
-            HttpResponse response = new DefaultHttpResponse(HTTP_1_1, HttpResponseStatus.OK);
-
-            long size = getFileSize(path);
-            response.headers().set(CONTENT_LENGTH, size);
-
-            ctx.write(response);
-
-            try {
-                ctx.write(
-                    new HttpChunkedInput(
-                        new ChunkedNioFile(path.toFile())
-                    )
-                );
-
-                ChannelFuture cfuture = ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
-
-                if (!isKeepAlive(message.getRequest())) {
-                    cfuture.addListener(ChannelFutureListener.CLOSE);
-                }
-            }
-            catch (Exception ex) {
-                log.error("Error streaming file !", ex);
-                ctx.close();
-            }
-        }
-    }
-
-    long getFileSize(Path path) {
-        try {
-            return Files.size(path);
-        }
-        catch (Exception ex) {
-            log.warn("Error getting file size ! {}", path, ex);
-            return -1;
-        }
-    }
 
     public static final String OK          = "";
 	public static final String BAD_REQUEST = "{x_x}";

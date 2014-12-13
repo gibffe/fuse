@@ -23,13 +23,8 @@ public class StaticContentActor extends FuseEndpointActor {
     protected void onRequest(FuseRequestMessage request) {
 
         try {
-            Path path
-                = Paths.get(
-                      contentDir +
-                      request.getRequest()
-                             .getUri()
-                             .substring(7)
-                ).toRealPath();
+            Path path = Paths.get(contentDir + request.getRequest().getUri())
+                             .toRealPath();
 
             proto.stream(request, path);
         }
