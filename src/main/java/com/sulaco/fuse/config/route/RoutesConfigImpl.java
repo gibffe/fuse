@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.sulaco.fuse.akka.actor.StaticContentActor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,8 @@ import com.sulaco.fuse.config.route.RouteHandler.RouteHandlerBuilder;
 import com.sulaco.fuse.config.route.RouteSegment.RouteSegmentBuilder;
 import com.typesafe.config.ConfigValue;
 
+import javax.annotation.PostConstruct;
+
 @Component
 @SuppressWarnings({"unchecked"})
 public class RoutesConfigImpl implements RoutesConfig {
@@ -36,15 +39,28 @@ public class RoutesConfigImpl implements RoutesConfig {
 	RouteSegment root;
 	
 	@Autowired protected ConfigSource configSource;
-	
-	public RoutesConfigImpl() {
-		root = RouteSegment.builder().build();
-	}
-		
+
+    public void initRoot() {
+
+        // root is our content serving actor
+        String actorClass = StaticContentActor.class.getCanonicalName();
+        Optional<ActorRef> ref = factory.getLocalActor(actorClass);
+
+        root = RouteSegment.builder()
+                .withHandler(
+                        RouteHandler.builder()
+                                .withActorRef(ref)
+                                .build()
+                )
+                .build();
+    }
+
 	@Override
 	public void parse() {		
 		log.info("[fuse] Parsing routes");
-		
+
+        initRoot();
+
 		// parse actors section
 		parseActorDefs();
 		
@@ -280,7 +296,7 @@ public class RoutesConfigImpl implements RoutesConfig {
 				current = next.get();
 			}
 			else {
-				return null;
+				break;
 			}
 		}
 		
