@@ -2,6 +2,7 @@ package com.sulaco.fuse;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -96,11 +97,13 @@ public class FuseServerImpl implements FuseServer, InitializingBean, Application
             ServerBootstrap boot = new ServerBootstrap();
             boot.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)
-                .childHandler(channelInitializer);
+                .childHandler(channelInitializer)
+                .option(ChannelOption.TCP_NODELAY, true);
 
             Channel channel = boot.bind(config.getInt("fuse.port"))
 				                  .sync()
 				                  .channel();
+
             log.info("[fuse] netty:{} GET /fuse/status for more info", config.getInt("fuse.port"));
             
             channel.closeFuture()
