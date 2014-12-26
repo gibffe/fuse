@@ -5,7 +5,7 @@ public interface FuseInternalMessage extends FuseOriginChain {
 	
 	FuseMessageContext getContext();
 
-    long getTimestamps();
+    long getTimestamp();
 
     FuseInternalMessage timestamp();
 }

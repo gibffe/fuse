@@ -42,7 +42,7 @@ public class FuseInternalMessageImpl implements FuseInternalMessage {
 	}
 
     @Override
-    public long getTimestamps() {
+    public long getTimestamp() {
         return timestamp;
     }
 
