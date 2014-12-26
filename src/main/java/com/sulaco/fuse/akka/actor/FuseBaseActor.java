@@ -2,6 +2,7 @@ package com.sulaco.fuse.akka.actor;
 
 import java.util.Optional;
 
+import com.sulaco.fuse.akka.message.FuseSuspendMessageImpl;
 import org.springframework.context.ApplicationContext;
 
 import akka.actor.ActorRef;
@@ -18,11 +19,14 @@ import com.sulaco.fuse.akka.syslog.SystemLogMessage.LogMessageBuilder;
 public abstract class FuseBaseActor extends UntypedActor {
 
 	protected ActorSelection logger;
-	
+
+    protected ActorSelection animator;
+
 	protected ApplicationContext ctx;
 	
 	public FuseBaseActor() {
-		this.logger = getContext().actorSelection("/user/logger");
+		this.logger   = getContext().actorSelection("/fuse/user/logger");
+        this.animator = getContext().actorSelection("/fuse/user/animator");
 	}
 	
 	public FuseBaseActor(ApplicationContext ctx) {
@@ -65,15 +69,19 @@ public abstract class FuseBaseActor extends UntypedActor {
 	}
 	
 	public void send(FuseInternalMessage message, String path) {
-		
-		message.pushOrigin(self());
-		
-		getContext().actorSelection(path)
-					.tell(
-							message, 
-							self()
-		);
+        send(message, getContext().actorSelection(path));
 	}
+
+    public void send(FuseInternalMessage message, ActorSelection selection) {
+        message.pushOrigin(self());
+        selection.tell(message, self());
+    }
+
+    public void bounce(FuseInternalMessage message, ActorSelection selection, String bouncePath) {
+        ActorRef bounceTo = getContext().actorFor(bouncePath);
+        message.pushOrigin(bounceTo);
+        selection.tell(message, bounceTo);
+    }
 
 	@Override
 	public void unhandled(Object message) {
@@ -103,4 +111,19 @@ public abstract class FuseBaseActor extends UntypedActor {
 		
 		logger.tell(logmessage, getSelf());
 	}
+
+    protected void suspend(FuseRequestMessage message) {
+        send(
+            new FuseSuspendMessageImpl(message),
+            animator
+        );
+    }
+
+    protected void suspend(FuseRequestMessage message, String bouncePath) {
+        bounce(
+            new FuseSuspendMessageImpl(message),
+            animator,
+            bouncePath
+        );
+    }
 }

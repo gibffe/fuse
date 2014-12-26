@@ -43,7 +43,7 @@ public class ActorFactoryImpl implements ActorFactory {
 		
 		try {
 			final Class<?> clazz = validateClass(actorClass);
-			actorRef = system.actorOf(Props.create(clazz, ctx),	actorClass);
+			actorRef = system.actorOf(Props.create(clazz, ctx),	actorName);
 		}
 		catch (Exception ex) {
 			log.error("Error creating actor:{}", actorClass, ex);	

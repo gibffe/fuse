@@ -5,6 +5,9 @@ import static com.sulaco.fuse.util.Tools.lookupMethod;
 import java.lang.reflect.Method;
 import java.util.Optional;
 
+import akka.actor.ActorSelection;
+import com.sulaco.fuse.akka.message.FuseSuspendMessage;
+import com.sulaco.fuse.akka.message.FuseSuspendMessageImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +22,7 @@ import com.sulaco.fuse.metrics.MetricsRegistry;
 public abstract class FuseEndpointActor extends FuseBaseActor {
 	
 	protected Timer meter;
-	
+
 	@Autowired protected MetricsRegistry metrics;
 	
 	@Autowired protected WireProtocol proto;
@@ -86,9 +89,7 @@ public abstract class FuseEndpointActor extends FuseBaseActor {
 			log.warn("[fuse] No handling method specified. Override onReceive. x_x");
 		}
 	}
-	
-	
-	
+
 	@Override
 	public void unhandled(Object message) {
 		super.unhandled(message);

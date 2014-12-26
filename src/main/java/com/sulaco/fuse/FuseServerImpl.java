@@ -57,10 +57,11 @@ public class FuseServerImpl implements FuseServer, InitializingBean, Application
 		
 		log.info("[fuse] Creating system logger");
 		actorSystem.actorOf(Props.create(SystemLogActor.class));
-		
+
 		log.info("[fuse] Initializing routing");
 		actorFactory.setActorSystem(actorSystem);
 		configSource.parseLocalConfig();
+
 		// create router actor and pass the reference to channelInitializer
 		channelInitializer
 			.setRouter(
@@ -71,6 +72,14 @@ public class FuseServerImpl implements FuseServer, InitializingBean, Application
 						 )							
 				)
 			);
+
+        // create suspended animator
+        actorFactory.getLocalActor(
+            "animator",
+            "com.sulaco.fuse.akka.actor.SuspendedAnimationActor",
+            "animator",
+            configSource.getConfig().getInt("fuse.animator.spin")
+        );
 	}
 	
 	@Override
