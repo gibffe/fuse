@@ -1,8 +1,10 @@
 package com.sulaco.fuse.akka.async;
 
 
+import akka.actor.ActorSelection;
 import com.sulaco.fuse.akka.message.FuseInternalMessage;
 import com.sulaco.fuse.config.ConfigSource;
+import com.sulaco.fuse.config.actor.ActorFactory;
 import com.typesafe.config.Config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -18,6 +20,8 @@ import java.util.concurrent.TimeUnit;
 public class RequestSuspenderImpl implements RequestSuspender {
 
     @Autowired ConfigSource configSource;
+
+    @Autowired ActorFactory actorFactory;
 
     long sweepInterval;
     long sweepTimeout;
@@ -50,9 +54,7 @@ public class RequestSuspenderImpl implements RequestSuspender {
 
         Executors.newScheduledThreadPool(1)
                  .scheduleAtFixedRate(
-                         () -> {
-                            sweepCryo();
-                         },
+                         () -> sweepCryo(),
                          0,
                          sweepInterval,
                          TimeUnit.MILLISECONDS
@@ -79,20 +81,32 @@ public class RequestSuspenderImpl implements RequestSuspender {
         // since we can navigate this map in request id order and since ids are ever increasing (until flip to 0)
         // we only ever scan the tail until first request that does not need to be collected
         //
-        long timestamp;
-        long now = System.currentTimeMillis();
 
-        for (Map.Entry<Long, FuseInternalMessage> entry : cryo.entrySet()) {
-            try {
-                timestamp = entry.getValue().getTimestamp();
-                if (now - timestamp >= sweepTimeout) {
+        Optional<ActorSelection> selection = actorFactory.select("/fuse/user/channelReaper");
 
+        selection.ifPresent(
+            reaper -> {
+
+                long timestamp;
+                long now = System.currentTimeMillis();
+
+                for (Map.Entry<Long, FuseInternalMessage> entry : cryo.entrySet()) {
+                    try {
+
+                        timestamp = entry.getValue().getTimestamp();
+
+                        if (now - timestamp >= sweepTimeout) {
+                            reaper.tell(entry.getValue());
+                        }
+                    }
+                    catch(IllegalStateException ise) {
+                        // Entry no longer in cryo - keep going.
+                    }
                 }
+
             }
-            catch(IllegalStateException ise) {
-                // Entry no longer in cryo - keep going.
-            }
-        }
+        );
+
     }
 
 }

@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import akka.actor.ActorSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -49,12 +50,17 @@ public class ActorFactoryImpl implements ActorFactory {
 			log.error("Error creating actor:{}", actorClass, ex);	
 		}
 		
-		return Optional.ofNullable(actorRef);
+		return Optional.empty();
 	}
 	
 	@Override
 	public Optional<ActorRef> getLocalActorByRef(String ref) {
-		return Optional.ofNullable(cache.get(ref));
+        if (cache.containsKey(ref)) {
+            return Optional.of(cache.get(ref));
+        }
+        else {
+            return Optional.empty();
+        }
 	}
 	
 	@Override
@@ -82,18 +88,18 @@ public class ActorFactoryImpl implements ActorFactory {
 						  key -> {
 							  if (spinCount == 1) {
 								  return system.actorOf(
-											Props.create(clazz, ctx), 
-											actorName
+								      Props.create(clazz, ctx),
+									  actorName
 								  );
 							  }
 							  else {
 								  // return a router instead
 								  return system.actorOf(
-											Props.empty()
-											 	 .withRouter(
-											         RoundRobinRouter.create(routees(ref,clazz, spinCount))
-											     ),
-											actorName
+                                      Props.empty()
+                                          .withRouter(
+                                                  RoundRobinRouter.create(routees(ref, clazz, spinCount))
+                                          ),
+                                      actorName
 								  );
 							  }
 						  }
@@ -104,7 +110,7 @@ public class ActorFactoryImpl implements ActorFactory {
 			log.error("Error creating actor:{}", actorClass, ex);
 		}
 		
-		return Optional.ofNullable(actorRef);
+		return Optional.empty();
 	}
 	
 	protected Iterable<ActorRef> routees(String ref, Class<?> clazz, int spinCount) {
@@ -123,7 +129,19 @@ public class ActorFactoryImpl implements ActorFactory {
 		return actors;
 	}
 
-	@Override
+    @Override
+    public Optional<ActorSelection> select(String path) {
+        try {
+            return Optional.of(system.actorSelection(path));
+        }
+        catch (Exception ex) {
+            log.error("Unable to select {} !", path);
+        }
+
+        return Optional.empty();
+    }
+
+    @Override
 	public void setActorSystem(ActorSystem actorSystem) {
 		this.system = actorSystem;
 	}
