@@ -25,8 +25,8 @@ public abstract class FuseBaseActor extends UntypedActor {
 	protected ApplicationContext ctx;
 	
 	public FuseBaseActor() {
-		this.logger   = getContext().actorSelection("/fuse/user/logger");
-        this.animator = getContext().actorSelection("/fuse/user/animator");
+		this.logger   = getContext().actorSelection("/user/logger");
+        this.animator = getContext().actorSelection("/user/animator");
 	}
 	
 	public FuseBaseActor(ApplicationContext ctx) {

@@ -50,17 +50,12 @@ public class ActorFactoryImpl implements ActorFactory {
 			log.error("Error creating actor:{}", actorClass, ex);	
 		}
 		
-		return Optional.empty();
+		return Optional.ofNullable(actorRef);
 	}
 	
 	@Override
 	public Optional<ActorRef> getLocalActorByRef(String ref) {
-        if (cache.containsKey(ref)) {
-            return Optional.of(cache.get(ref));
-        }
-        else {
-            return Optional.empty();
-        }
+        return Optional.ofNullable(cache.get(ref));
 	}
 	
 	@Override

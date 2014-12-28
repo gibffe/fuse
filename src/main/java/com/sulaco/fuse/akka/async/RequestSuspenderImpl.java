@@ -37,7 +37,7 @@ public class RequestSuspenderImpl implements RequestSuspender {
     NavigableMap<Long, FuseInternalMessage> cryo;
 
 
-    public RequestSuspenderImpl() {
+    public void init() {
         initCryo();
         initSweeper();
     }
@@ -82,7 +82,7 @@ public class RequestSuspenderImpl implements RequestSuspender {
         // we only ever scan the tail until first request that does not need to be collected
         //
 
-        Optional<ActorSelection> selection = actorFactory.select("/fuse/user/channelReaper");
+        Optional<ActorSelection> selection = actorFactory.select("/fuse/user/ChannelReaper");
 
         selection.ifPresent(
             reaper -> {

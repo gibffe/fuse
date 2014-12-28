@@ -4,16 +4,16 @@ import java.util.UUID;
 
 public class FuseReviveMessageImpl extends FuseInternalMessageImpl implements FuseReviveMessage {
 
-    UUID id;
+    long id;
     Object payload;
 
-    public FuseReviveMessageImpl(UUID id, Object payload) {
+    public FuseReviveMessageImpl(long id, Object payload) {
         this.id = id;
         this.payload = payload;
     }
 
     @Override
-    public UUID getId() {
+    public long getId() {
         return id;
     }
 
