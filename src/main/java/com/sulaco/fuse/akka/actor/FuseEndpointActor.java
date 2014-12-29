@@ -36,7 +36,9 @@ public abstract class FuseEndpointActor extends FuseBaseActor {
 		super(ctx);
 		
 		if (ctx != null) {
-			meter = metrics.getRegistry().timer(getClass().getName());
+            if (meter != null) {
+                meter = metrics.getRegistry().timer(getClass().getName());
+            }
 		}
 	}
 	
@@ -97,6 +99,14 @@ public abstract class FuseEndpointActor extends FuseBaseActor {
 			proto.error((FuseRequestMessage) message);
 		}
 	}
+
+    public void setProto(WireProtocol proto) {
+        this.proto = proto;
+    }
+
+    public void setMeter(Timer meter) {
+        this.meter = meter;
+    }
 
 	protected static final Logger log = LoggerFactory.getLogger(FuseEndpointActor.class);
 }

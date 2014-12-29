@@ -105,7 +105,7 @@ public class ActorFactoryImpl implements ActorFactory {
 			log.error("Error creating actor:{}", actorClass, ex);
 		}
 		
-		return Optional.empty();
+		return Optional.ofNullable(actorRef);
 	}
 	
 	protected Iterable<ActorRef> routees(String ref, Class<?> clazz, int spinCount) {

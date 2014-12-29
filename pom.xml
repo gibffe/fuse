@@ -34,7 +34,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.7.1.201405082137</version>
+                <version>0.7.2.201409121644</version>
                 <executions>
                     <execution>
                         <id>default-prepare-agent</id>
@@ -83,11 +83,6 @@
 		<dependency>
 			<groupId>com.typesafe.akka</groupId>
 			<artifactId>akka-actor_2.10</artifactId>
-			<version>${akka.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.typesafe.akka</groupId>
-			<artifactId>akka-testkit_2.10</artifactId>
 			<version>${akka.version}</version>
 		</dependency>
 		<dependency>
@@ -157,6 +152,12 @@
 			<version>4.3.3</version>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-testkit_2.10</artifactId>
+            <version>${akka.version}</version>
+            <scope>test</scope>
+        </dependency>
 
 	</dependencies>
 
