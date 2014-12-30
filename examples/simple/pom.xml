@@ -7,7 +7,7 @@
     <groupId>com.sulaco</groupId>
 	<artifactId>fuse-ex1</artifactId>
 	<name>fuse-ex1</name>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -31,7 +31,7 @@
 	    <dependency>
         	<groupId>com.sulaco</groupId>
             <artifactId>fuse</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>0.0.2-SNAPSHOT</version>
         </dependency>
 	</dependencies>
 
