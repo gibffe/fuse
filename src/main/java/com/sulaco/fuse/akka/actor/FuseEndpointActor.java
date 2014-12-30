@@ -36,7 +36,7 @@ public abstract class FuseEndpointActor extends FuseBaseActor {
 		super(ctx);
 		
 		if (ctx != null) {
-            if (meter != null) {
+            if (metrics != null) {
                 meter = metrics.getRegistry().timer(getClass().getName());
             }
 		}

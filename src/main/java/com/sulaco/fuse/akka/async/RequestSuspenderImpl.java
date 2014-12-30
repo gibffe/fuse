@@ -6,6 +6,8 @@ import com.sulaco.fuse.akka.message.FuseInternalMessage;
 import com.sulaco.fuse.config.ConfigSource;
 import com.sulaco.fuse.config.actor.ActorFactory;
 import com.typesafe.config.Config;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -74,7 +76,7 @@ public class RequestSuspenderImpl implements RequestSuspender {
 
     @Override
     public Optional<FuseInternalMessage> revive(long id) {
-        return Optional.of(cryo.remove(id));
+        return Optional.ofNullable(cryo.remove(id));
     }
 
     void sweepCryo() {
@@ -82,7 +84,7 @@ public class RequestSuspenderImpl implements RequestSuspender {
         // we only ever scan the tail until first request that does not need to be collected
         //
 
-        Optional<ActorSelection> selection = actorFactory.select("/fuse/user/ChannelReaper");
+        Optional<ActorSelection> selection = actorFactory.select("/user/ChannelReaper");
 
         selection.ifPresent(
             reaper -> {
@@ -96,17 +98,21 @@ public class RequestSuspenderImpl implements RequestSuspender {
                         timestamp = entry.getValue().getTimestamp();
 
                         if (now - timestamp >= sweepTimeout) {
-                            reaper.tell(entry.getValue());
+                            FuseInternalMessage dead = cryo.remove(entry.getKey());
+                            if (dead != null) {
+                                reaper.tell(dead);
+                            }
                         }
                     }
-                    catch(IllegalStateException ise) {
+                    catch(IllegalStateException ex) {
                         // Entry no longer in cryo - keep going.
+                        log.warn("Cry sweep warning !", ex);
                     }
                 }
 
             }
         );
-
     }
 
+    static final Logger log = LoggerFactory.getLogger(RequestSuspenderImpl.class);
 }

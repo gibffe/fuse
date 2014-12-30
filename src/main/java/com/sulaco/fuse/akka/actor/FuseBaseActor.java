@@ -1,17 +1,16 @@
 package com.sulaco.fuse.akka.actor;
 
 import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
-import com.sulaco.fuse.akka.message.FuseSuspendMessageImpl;
+import com.sulaco.fuse.akka.message.*;
 import org.springframework.context.ApplicationContext;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.actor.UntypedActor;
 
-import com.sulaco.fuse.akka.message.FuseInternalMessage;
-import com.sulaco.fuse.akka.message.FuseInternalMessageImpl;
-import com.sulaco.fuse.akka.message.FuseRequestMessage;
 import com.sulaco.fuse.akka.syslog.SystemLogMessage;
 import com.sulaco.fuse.akka.syslog.SystemLogMessage.LogLevel;
 import com.sulaco.fuse.akka.syslog.SystemLogMessage.LogMessageBuilder;
@@ -126,4 +125,13 @@ public abstract class FuseBaseActor extends UntypedActor {
             bouncePath
         );
     }
+
+    protected Object revive(long id, Object payload) {
+        send(
+            new FuseReviveMessageImpl(id, payload),
+            animator
+        );
+        return null;
+    }
+
 }
