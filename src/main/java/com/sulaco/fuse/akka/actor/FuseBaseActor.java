@@ -5,6 +5,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import com.sulaco.fuse.akka.message.*;
+import com.sulaco.fuse.codec.WireProtocol;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 import akka.actor.ActorRef;
@@ -22,6 +24,8 @@ public abstract class FuseBaseActor extends UntypedActor {
     protected ActorSelection animator;
 
 	protected ApplicationContext ctx;
+
+    @Autowired protected WireProtocol proto;
 	
 	public FuseBaseActor() {
 		this.logger   = getContext().actorSelection("/user/logger");
@@ -49,34 +53,47 @@ public abstract class FuseBaseActor extends UntypedActor {
 	}
 	
 	public void onMessage(FuseInternalMessage message) {
-		
-		Optional<ActorRef> origin = message.popOrigin();
-		
-		// push message down the chain
-		if (origin.isPresent()) {
-			origin.get()
-				  .tell(
-						  message, 
-						  self()
-				  );
-		}
-		else {
-			// no more actors that could potentially handle this internal message, this
-			// would usually be a logic error
-			unhandled(message);
-		}
+
+        if (message instanceof FuseSuspendMessage) {
+            Optional<Object> payload = message.getContext().get("payload");
+            onRevive(message.getContext().getRequest().get(), payload.get());
+        }
+        else {
+            onInternal(message);
+        }
 	}
-	
-	public void send(FuseInternalMessage message, String path) {
+
+    protected void onRevive(FuseRequestMessage request, Object payload) {
+        proto.respond(request, payload);
+    }
+
+    protected void onInternal(FuseInternalMessage message) {
+        Optional<ActorRef> origin = message.popOrigin();
+
+        // push message down the chain
+        if (origin.isPresent()) {
+            origin.get()
+                    .tell(
+                            message,
+                            self()
+                    );
+        } else {
+            // no more actors that could potentially handle this internal message, this
+            // would usually be a logic error
+            unhandled(message);
+        }
+    }
+
+	protected void send(FuseInternalMessage message, String path) {
         send(message, getContext().actorSelection(path));
 	}
 
-    public void send(FuseInternalMessage message, ActorSelection selection) {
+    protected void send(FuseInternalMessage message, ActorSelection selection) {
         message.pushOrigin(self());
         selection.tell(message, self());
     }
 
-    public void bounce(FuseInternalMessage message, ActorSelection selection, String bouncePath) {
+    protected void bounce(FuseInternalMessage message, ActorSelection selection, String bouncePath) {
         ActorRef bounceTo = getContext().actorFor(bouncePath);
         message.pushOrigin(bounceTo);
         selection.tell(message, bounceTo);

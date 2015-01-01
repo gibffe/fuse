@@ -1,9 +1,7 @@
-package com.sulaco.fuse.example.async.actor;
+package com.sulaco.fuse.example.async.endpoint;
 
 import com.sulaco.fuse.akka.actor.FuseEndpointActor;
-import com.sulaco.fuse.akka.message.FuseInternalMessage;
 import com.sulaco.fuse.akka.message.FuseRequestMessage;
-import com.sulaco.fuse.akka.message.FuseSuspendMessage;
 import com.sulaco.fuse.example.async.domain.dao.CassandraDao;
 import com.sulaco.fuse.example.async.domain.entity.Playlist;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +24,12 @@ public class SongReadActor extends FuseEndpointActor {
 
         if (id.isPresent()) {
 
+            // Once suspended request is revived, it will be passed back to this actor and handled in
+            // the onRevive method. If not overridden, by default, it will push received result on to the wire.
+            // Take a look at FuseBaseActor.onMessage for details.
             suspend(request);
 
+            // we will cross thread boundaries inside the dao, take a look
             dao.getSongById(
                 id.get(),
                 result -> revive(request.getId(), result)
@@ -38,18 +40,10 @@ public class SongReadActor extends FuseEndpointActor {
         }
     }
 
+    // The revival message is delivered by suspended animation actor.
+    //
     @Override
-    public void onMessage(FuseInternalMessage message) {
-        if (message instanceof FuseSuspendMessage) {
-            Optional<Object> payload = message.getContext().get("payload");
-            payload.ifPresent(
-                data -> {
-                    proto.respond(
-                        message.getContext().getRequest().get(),
-                        data
-                    );
-                }
-            );
-        }
+    protected void onRevive(FuseRequestMessage request, Object payload) {
+        proto.respond(request, payload);
     }
 }
