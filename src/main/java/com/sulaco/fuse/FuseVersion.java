@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class FuseVersion {
 
-	String version = "Fuse v0.0.1-SNAPSHOT";
+	String version = "Fuse v0.0.2-SNAPSHOT";
 	
 	public FuseVersion() {
 		super();

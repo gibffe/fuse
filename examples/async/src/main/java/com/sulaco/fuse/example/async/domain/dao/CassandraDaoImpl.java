@@ -18,7 +18,7 @@ public class CassandraDaoImpl implements CassandraDao {
     String node = "localhost";
     Cluster cluster;
     Session session;
-    Executor executor = Executors.newCachedThreadPool();
+    Executor executor = Executors.newFixedThreadPool(5);
 
     PreparedStatement stmt_get_playlist;
     PreparedStatement stmt_get_song;
@@ -35,18 +35,14 @@ public class CassandraDaoImpl implements CassandraDao {
     }
 
     @Override
-    public void getSongById(String id, Function consumer) {
+    public void getSongById(String id, Function<Object, ?> consumer) {
 
         ResultSetFuture future
             = session.executeAsync(
                 stmt_get_song.bind(UUID.fromString(id))
             );
 
-        consumeAsync(
-            future,
-            rs -> songFrom(rs),
-            consumer
-        );
+        consumeAsync(future, consumer, rs -> songFrom(rs));
     }
 
     @Override
@@ -57,11 +53,7 @@ public class CassandraDaoImpl implements CassandraDao {
                 stmt_get_playlist.bind(id)
             );
 
-        consumeAsync(
-            future,
-            rs -> playlistFrom(id, rs),
-            consumer
-        );
+        consumeAsync(future, consumer, rs -> playlistFrom(id, rs));
     }
 
     Playlist playlistFrom(String id, ResultSet rs) {
@@ -93,7 +85,7 @@ public class CassandraDaoImpl implements CassandraDao {
         return song;
     }
 
-    void consumeAsync(ResultSetFuture future, Function<ResultSet, ?> extractor, Function<Object, ?> consumer) {
+    void consumeAsync(ResultSetFuture future, Function<Object, ?> consumer, Function<ResultSet, ?> extractor) {
         Futures.addCallback(
             future,
             new FutureCallback<ResultSet>() {

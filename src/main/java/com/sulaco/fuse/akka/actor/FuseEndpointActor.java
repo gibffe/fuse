@@ -25,9 +25,6 @@ public abstract class FuseEndpointActor extends FuseBaseActor {
 
 	@Autowired protected MetricsRegistry metrics;
 	
-	@Autowired protected WireProtocol proto;
-	
-	
 	public FuseEndpointActor() {
 		super();
 	}
@@ -91,6 +88,8 @@ public abstract class FuseEndpointActor extends FuseBaseActor {
 			log.warn("[fuse] No handling method specified. Override onReceive. x_x");
 		}
 	}
+
+
 
 	@Override
 	public void unhandled(Object message) {
