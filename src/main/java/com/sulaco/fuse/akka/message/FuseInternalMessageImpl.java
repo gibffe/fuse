@@ -6,12 +6,14 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
 import akka.actor.ActorRef;
 
-public class FuseInternalMessageImpl implements FuseInternalMessage, FuseOriginChain {
+public class FuseInternalMessageImpl implements FuseInternalMessage {
 
 	protected FuseMessageContext ctx;
 	
 	protected Deque<ActorRef> chain;
-	
+
+    protected long timestamp;
+
 	public FuseInternalMessageImpl(FuseRequestMessage request) {
 		this();
 		ctx.setRequest(request);
@@ -19,8 +21,9 @@ public class FuseInternalMessageImpl implements FuseInternalMessage, FuseOriginC
 	
 	public FuseInternalMessageImpl() {
 		super();
-		this.ctx   = new FuseMessageContextImpl();
-		this.chain = new ConcurrentLinkedDeque<>();
+        timestamp();
+        this.ctx   = new FuseMessageContextImpl();
+        this.chain = new ConcurrentLinkedDeque<>();
 	}
 	
 	@Override
@@ -38,4 +41,14 @@ public class FuseInternalMessageImpl implements FuseInternalMessage, FuseOriginC
 		return ctx;
 	}
 
+    @Override
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    @Override
+    public FuseInternalMessage timestamp() {
+        timestamp = System.currentTimeMillis();
+        return this;
+    }
 }

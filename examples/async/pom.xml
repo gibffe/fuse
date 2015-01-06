@@ -5,8 +5,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
     <groupId>com.sulaco</groupId>
-	<artifactId>fuse-ex1</artifactId>
-	<name>fuse-ex1</name>
+	<artifactId>fuse-ex2</artifactId>
+	<name>fuse-ex2</name>
     <version>0.0.2</version>
 
     <properties>
@@ -32,6 +32,11 @@
         	<groupId>com.sulaco</groupId>
             <artifactId>fuse</artifactId>
             <version>0.0.2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.datastax.cassandra</groupId>
+            <artifactId>cassandra-driver-core</artifactId>
+            <version>2.0.1</version>
         </dependency>
 	</dependencies>
 

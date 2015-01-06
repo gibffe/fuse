@@ -7,51 +7,60 @@ import io.netty.handler.codec.http.HttpRequest;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import com.sulaco.fuse.config.route.Route;
 import com.sulaco.fuse.config.route.RouteHandler;
 
 public class FuseRequestMessageImpl implements FuseRequestMessage {
-	
+
+    long id;
+
+    HttpRequest incomingRequest;
+
 	ChannelHandlerContext channelContext;
-	
-	HttpRequest incomingRequest;
-	
+
 	Route route;
 	
 	volatile boolean flushed = false;
 	
-	public FuseRequestMessageImpl(ChannelHandlerContext context, HttpRequest request) {
-		this.channelContext  = context;
+	public FuseRequestMessageImpl(long id, ChannelHandlerContext context, HttpRequest request) {
+		this.id = id;
+        this.channelContext  = context;
 		this.incomingRequest = request;
 	}
 
-	@Override
+    @Override
+    public long getId() {
+        return id;
+    }
+
+    @Override
+    public HttpRequest getRequest() {
+        return incomingRequest;
+    }
+
+    @Override
 	public ChannelHandlerContext getChannelContext() {
 		return channelContext;
 	}
 
-	@Override
-	public HttpRequest getRequest() {
-		return incomingRequest;
-	}
-
-	@Override
+    @Override
 	public RouteHandler getHandler() {
 		return route.getHandler();
 	}
 
-	@Override
+    @Override
 	public Map<String, String> getParams() {
 		return route.getParams();
 	}
 
-	@Override
+    @Override
 	public Optional<String> getParam(String name) {
 		return route.getParam(name);
 	}
-	
-	@Override
+
+    @Override
 	public String getRequestBody() {
 		return ((DefaultFullHttpRequest) incomingRequest).content().toString(charset_utf8);
 	}
@@ -59,14 +68,14 @@ public class FuseRequestMessageImpl implements FuseRequestMessage {
 	public void setRoute(Route route) {
 		this.route = route;
 	}
-	
-	@Override
+
+    @Override
 	public void flush() {
 		channelContext.flush();
 		flushed = true;
 	}
 
-	@Override
+    @Override
 	public boolean flushed() {
 		return flushed;
 	}

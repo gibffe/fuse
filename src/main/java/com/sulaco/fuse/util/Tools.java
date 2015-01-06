@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +13,7 @@ import com.sulaco.fuse.akka.message.FuseRequestMessage;
 
 public class Tools {
 
-	private static ConcurrentMap<String, ConcurrentMap<String, String>> keyCache 
+	private static ConcurrentMap<String, ConcurrentMap<String, String>> keyCache
 		= new ConcurrentHashMap<>();
 	
 	private static ConcurrentMap<String, Optional<Method>> methodCache 
@@ -72,6 +73,6 @@ public class Tools {
 		//
 		return keyCache.get(clazz).get(methodName);
 	}
-	
+
 	private static final Logger log = LoggerFactory.getLogger(Tools.class);
 }
