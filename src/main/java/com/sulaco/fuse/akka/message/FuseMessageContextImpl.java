@@ -1,9 +1,9 @@
 package com.sulaco.fuse.akka.message;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @SuppressWarnings("unchecked")
@@ -11,7 +11,7 @@ public class FuseMessageContextImpl implements FuseMessageContext {
 
 	private Optional<FuseRequestMessage> request;
 	
-	private ConcurrentMap<String, Object> context = new ConcurrentHashMap<>();
+	private Map<String, Object> context = new HashMap<>();
 	
 	@Override
 	public int inc(String key) {
@@ -44,12 +44,16 @@ public class FuseMessageContextImpl implements FuseMessageContext {
 		);
 	}
 
-	@Override
-	public FuseMessageContext put(String key, Object value) {
+    @Override
+    public <T> Optional<T> payload() {
+        return get("payload");
+    }
+
+    public FuseMessageContext put(String key, Object value) {
 		context.put(key, value);
 		return this;
 	}
-	
+
 	@Override
 	public FuseMessageContext put(String key, Optional<Object> value) {
 		value.ifPresent(
