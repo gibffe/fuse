@@ -10,8 +10,10 @@ public interface FuseMessageContext {
 	public int dec(String key);
 	
 	public <T> Optional<T> get(String key);
-	
-	public FuseMessageContext put(String key, Object value);
+
+    public <T> Optional<T> payload();
+
+    public FuseMessageContext put(String key, Object value);
 	
 	public FuseMessageContext put(String key, Optional<Object> value);
 	

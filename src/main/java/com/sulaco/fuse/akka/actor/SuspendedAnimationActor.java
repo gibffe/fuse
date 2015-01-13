@@ -12,8 +12,7 @@ import java.util.UUID;
 
 public class SuspendedAnimationActor extends FuseBaseActor {
 
-    @Autowired
-    RequestSuspender suspender;
+    @Autowired RequestSuspender suspender;
 
     public SuspendedAnimationActor(ApplicationContext ctx) {
         super(ctx);
@@ -39,7 +38,7 @@ public class SuspendedAnimationActor extends FuseBaseActor {
                     sval.getContext()
                         .put(
                             "payload",
-                            msg.getPayload()
+                            Optional.ofNullable(msg.getPayload())
                         );
 
                     sval.popOrigin()

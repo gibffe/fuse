@@ -1,6 +1,7 @@
 package com.sulaco.fuse.akka.message;
 
 import java.util.Deque;
+import java.util.LinkedList;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
@@ -18,17 +19,22 @@ public class FuseInternalMessageImpl implements FuseInternalMessage {
 		this();
 		ctx.setRequest(request);
 	}
+
+    public FuseInternalMessageImpl(FuseInternalMessage message) {
+        timestamp();
+        this.ctx = message.getContext();
+        this.chain = message.getChain();
+    }
 	
 	public FuseInternalMessageImpl() {
-		super();
         timestamp();
         this.ctx   = new FuseMessageContextImpl();
-        this.chain = new ConcurrentLinkedDeque<>();
+        this.chain = new LinkedList<>();
 	}
 	
 	@Override
 	public Optional<ActorRef> popOrigin() {
-		return Optional.ofNullable(chain.pollLast());
+		return Optional.ofNullable(chain.pop());
 	}
 
 	@Override
@@ -42,6 +48,11 @@ public class FuseInternalMessageImpl implements FuseInternalMessage {
 	}
 
     @Override
+    public Deque<ActorRef> getChain() {
+        return chain;
+    }
+
+    @Override
     public long getTimestamp() {
         return timestamp;
     }
@@ -51,4 +62,10 @@ public class FuseInternalMessageImpl implements FuseInternalMessage {
         timestamp = System.currentTimeMillis();
         return this;
     }
+
+    @Override
+    public long getRequestId() {
+        return ctx.getRequest().get().getId();
+    }
+
 }
