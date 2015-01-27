@@ -12,10 +12,6 @@ import com.sulaco.fuse.akka.message.FuseRequestMessage;
 
 public class ServerStatusActor extends FuseEndpointActor {
 
-	public ServerStatusActor(ApplicationContext ctx) {
-		super(ctx);
-	}
-
 	public void serverStatus(FuseRequestMessage message) {
         actorStatus(message);
 	}

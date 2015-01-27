@@ -14,10 +14,6 @@ public class SuspendedAnimationActor extends FuseBaseActor {
 
     @Autowired RequestSuspender suspender;
 
-    public SuspendedAnimationActor(ApplicationContext ctx) {
-        super(ctx);
-    }
-
     @Override
     public void onMessage(FuseInternalMessage message) {
 

@@ -22,10 +22,6 @@ public class RouteFinderActor extends FuseEndpointActor {
 
 	@Autowired protected RoutesConfig routes;
 	
-	public RouteFinderActor(ApplicationContext ctx) {
-		super(ctx);
-	}
-
 	@Override
 	protected void onRequest(final FuseRequestMessage message) {
 		

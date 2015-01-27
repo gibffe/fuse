@@ -18,10 +18,6 @@ public class StaticContentActor extends FuseEndpointActor {
 
     @Autowired ConfigSource configSource;
 
-    public StaticContentActor(ApplicationContext ctx) {
-        super(ctx);
-    }
-
     @Override
     protected void onRequest(FuseRequestMessage request) {
 

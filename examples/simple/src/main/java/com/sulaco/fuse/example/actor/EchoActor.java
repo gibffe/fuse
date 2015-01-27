@@ -13,10 +13,6 @@ public class EchoActor extends FuseEndpointActor {
     @Autowired
     StringReverser reverser;
 
-    public EchoActor(ApplicationContext ctx) {
-        super(ctx);
-    }
-
     public void echo(FuseRequestMessage request) {
 
         Optional<String> param = request.getParam("param");

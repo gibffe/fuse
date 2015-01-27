@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import akka.actor.ActorSelection;
+import com.sulaco.fuse.akka.actor.FuseBaseActor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -44,7 +45,8 @@ public class ActorFactoryImpl implements ActorFactory {
 		
 		try {
 			final Class<?> clazz = validateClass(actorClass);
-			actorRef = system.actorOf(Props.create(clazz, ctx),	actorName);
+			actorRef = system.actorOf(Props.create(clazz),	actorName);
+            init(actorRef);
 		}
 		catch (Exception ex) {
 			log.error("Error creating actor:{}", actorClass, ex);	
@@ -74,7 +76,7 @@ public class ActorFactoryImpl implements ActorFactory {
 
 			if (spinCount < 0) {
 				// never cache for negative spin, always return fresh actor shell
-				actorRef = system.actorOf(Props.create(clazz, ctx),	actorName);		
+				actorRef = system.actorOf(Props.create(clazz), actorName);
 			}
 			else {
 				actorRef 
@@ -83,7 +85,7 @@ public class ActorFactoryImpl implements ActorFactory {
 						  key -> {
 							  if (spinCount == 1) {
 								  return system.actorOf(
-								      Props.create(clazz, ctx),
+								      Props.create(clazz),
 									  actorName
 								  );
 							  }
@@ -92,7 +94,7 @@ public class ActorFactoryImpl implements ActorFactory {
 								  return system.actorOf(
                                       Props.empty()
                                           .withRouter(
-                                                  RoundRobinRouter.create(routees(ref, clazz, spinCount))
+                                              RoundRobinRouter.create(getRoutees(ref, clazz, spinCount))
                                           ),
                                       actorName
 								  );
@@ -100,25 +102,23 @@ public class ActorFactoryImpl implements ActorFactory {
 						  }
 					);
 			}
+            init(actorRef);
 		}
 		catch (Exception ex) {
-			log.error("Error creating actor:{}", actorClass, ex);
+			log.error("Error creating actor: {}", actorClass, ex);
 		}
 		
 		return Optional.ofNullable(actorRef);
 	}
 	
-	protected Iterable<ActorRef> routees(String ref, Class<?> clazz, int spinCount) {
+	public Iterable<ActorRef> getRoutees(String ref, Class<?> clazz, int spinCount) {
 		
 		List<ActorRef> actors = new ArrayList<>();
-		
+
+        ActorRef actorRef;
 		for (int i = 0; i < spinCount; i++) {
-			actors.add(
-			    system.actorOf(
-			    			Props.create(clazz, ctx),
-		    				ref + "_" + i
-			    )
-			);
+            actorRef = system.actorOf(Props.create(clazz), ref + "_" + i);
+            actors.add(init(actorRef));
 		}
 		
 		return actors;
@@ -150,13 +150,21 @@ public class ActorFactoryImpl implements ActorFactory {
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.ctx = applicationContext;
 	}
-	
-	private Class<?> validateClass(String actorClass) throws Exception {
-		final Class<?> clazz = Class.forName(actorClass);
-		clazz.getConstructor(ApplicationContext.class);
-		
-		return clazz;
-	}
+
+    Class<?> validateClass(String actorClass) throws Exception {
+
+        Class<?> clazz = Class.forName(actorClass);
+        if (!FuseBaseActor.class.isAssignableFrom(clazz)) {
+            throw new IllegalArgumentException(actorClass + " not an actor class !");
+        }
+
+        return clazz;
+    }
+
+    ActorRef init(ActorRef ref) {
+        ref.tell(ctx, null);
+        return ref;
+    }
 	
 	private static final Logger log = LoggerFactory.getLogger(ActorFactoryImpl.class);
 

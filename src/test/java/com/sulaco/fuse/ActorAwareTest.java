@@ -35,7 +35,7 @@ public class ActorAwareTest {
         Props props = Props.create(clazz, mockAppCtx);
         TestActorRef<T> testActorRef = TestActorRef.create(system, props);
         testActorRef.underlyingActor().setProto(mockProto);
-        testActorRef.underlyingActor().setMeter(mockMeter);
+        //testActorRef.underlyingActor().setMeter(mockMeter);
 
         return testActorRef;
     }

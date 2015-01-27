@@ -6,10 +6,6 @@ import org.springframework.context.ApplicationContext;
 
 public class PostActor extends FuseEndpointActor {
 
-    public PostActor(ApplicationContext ctx) {
-        super(ctx);
-    }
-
     @Override
     protected void onRequest(FuseRequestMessage request) {
 
