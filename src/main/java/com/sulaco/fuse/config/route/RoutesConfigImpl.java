@@ -67,8 +67,45 @@ public class RoutesConfigImpl implements RoutesConfig {
 		// parse routes section
 		parseRouteDefs();
 	}
-	
-	protected void parseActorDefs() {
+
+    @Override
+    public Optional<Route> getFuseRoute(String requestUri) {
+
+        Route route = null;
+
+        try {
+            URI uri = URI.create(requestUri);
+
+            // extract path & split into REST segments
+            String path = uri.getPath();
+            String[] segments = path.split(segment_separator);
+
+            if (segments.length > 1) {
+                // perform pattern matching against existing routes config
+                route = find(segments);
+                if (route == null) {
+                    log.warn("Matchng handler for '{}' was not found.", requestUri);
+                }
+            }
+        }
+        catch (Exception ex) {
+            log.warn("Error parsing request uri", ex);
+        }
+
+        return Optional.ofNullable(route);
+    }
+
+    @Override
+    public void addEndpoint(ActorRef ref, String httpMethod, String path) {
+
+        RouteHandlerBuilder builder = RouteHandler.builder()
+                                                  .withActorRef(Optional.ofNullable(ref))
+                                                  .withHttpMethod(httpMethod);
+
+        processPathDefinition(httpMethod + " " + path, builder);
+    }
+
+    void parseActorDefs() {
 		Set<Entry<String, ConfigValue>> actorDefs 
 			= configSource.getConfig()
 						  .getObject("actors")
@@ -79,7 +116,7 @@ public class RoutesConfigImpl implements RoutesConfig {
 		}
 	}
 	
-	protected void parseRouteDefs() {
+    void parseRouteDefs() {
 		Set<Entry<String, ConfigValue>> routeDefs
 			= configSource.getConfig()
 						  .getObject("routes")
@@ -90,7 +127,7 @@ public class RoutesConfigImpl implements RoutesConfig {
 		}
 	}
 	
-	protected void processActorEntry(Entry<String, ConfigValue> entry) {
+	void processActorEntry(Entry<String, ConfigValue> entry) {
 	
 		// extract actor class
 		String actorClass = entry.getKey();
@@ -104,17 +141,22 @@ public class RoutesConfigImpl implements RoutesConfig {
 		factory.getLocalActor(id, actorClass, spinCount);
 	}
 
-	protected void processRouteEntry(Entry<String, ConfigValue> entry) {
+	void processRouteEntry(Entry<String, ConfigValue> entry) {
 	
 		// process actor definition
 		Optional<RouteHandlerBuilder> builder = processActorDefinition(entry.getValue());
-		
-		// process path definition
-		processPathDefinition(entry.getKey(), builder); 
+
+        // process path definition
+        if (builder.isPresent()) {
+            processPathDefinition(entry.getKey(), builder.get());
+        }
+        else {
+            log.warn("Error processing route entry for: {}", entry.getKey());
+        }
 
 	}
 	
-	protected Optional<RouteHandlerBuilder> processActorDefinition(ConfigValue cvalue) {
+	Optional<RouteHandlerBuilder> processActorDefinition(ConfigValue cvalue) {
 		
 		try {
 			// extract actor definition
@@ -151,38 +193,32 @@ public class RoutesConfigImpl implements RoutesConfig {
 	}
 
 	
-	protected void processPathDefinition(String path, Optional<RouteHandlerBuilder> handlerBuilder) {
+	void processPathDefinition(String path, RouteHandlerBuilder handlerBuilder) {
 
-		if (handlerBuilder.isPresent()) {
-			RouteSegment segment = root;
-			RouteSegmentBuilder builder = RouteSegment.builder();
-	
-			Matcher matcher = pathPattern.matcher(path);
-			if (matcher.matches()) {
-			
-				RouteHandler handler 
-					= handlerBuilder.get()
-									.withHttpMethod(matcher.group(1))
-									.build();
-													 
-				String[] split = matcher.group(3).split("/");
-		
-				// convert REST URI segments to stream & process one by one
-				Iterator<String> it = Arrays.stream(split).iterator();
-	
-				it.next();
-				while (it.hasNext()) {
-					String value = it.next();
-					segment = processSegment(value, it.hasNext(), builder, segment, handler);
-					saveSegment(segment);
-					
-					builder.reset();
-				}
-			}
-			else {
-				log.warn("{} is not a valid path definition", path);
-			}
-		}
+        RouteSegment segment = root;
+        RouteSegmentBuilder builder = RouteSegment.builder();
+
+        Matcher matcher = pathPattern.matcher(path);
+        if (matcher.matches()) {
+
+            RouteHandler handler
+                = handlerBuilder.withHttpMethod(matcher.group(1))
+                                .build();
+
+            String[] split = matcher.group(3).split("/");
+
+            // convert REST URI segments to stream & process one by one
+            Iterator<String> it = Arrays.stream(split).iterator();
+
+            it.next();
+            while (it.hasNext()) {
+                String value = it.next();
+                segment = processSegment(value, it.hasNext(), builder, segment, handler);
+                saveSegment(segment);
+
+                builder.reset();
+            }
+        }
 	}
 	
 	private RouteSegment processSegment(String value, boolean more, RouteSegmentBuilder builder, RouteSegment parent, RouteHandler handler) {
@@ -239,39 +275,12 @@ public class RoutesConfigImpl implements RoutesConfig {
 	private int defaultSpinCount() {
 		return configSource.getConfig().getInt("fuse.spin.default");
 	}
-	
-	@Override
-	public Optional<Route> getFuseRoute(String requestUri) {
 
-		Route route = null;
-		
-		try {
-			URI uri = URI.create(requestUri);
-			
-			// extract path & split into REST segments
-			String path = uri.getPath();
-			String[] segments = path.split("/");
-			
-			if (segments.length > 1) {
-				// perform pattern matching against existing routes config
-				route = find(segments);
-				if (route == null) {
-					log.warn("Matchng handler for '{}' was not found.", requestUri);
-				}
-			}
-		}
-		catch (Exception ex) {
-			log.warn("Error parsing request uri", ex);
-		}
-		
-		return Optional.ofNullable(route);
-	}
-	
 	private String extractParamName(String value) {
 		return value.split("<")[1].split(">")[0];
 	}
 	
-	protected Route find(String[] segments) {
+	Route find(String[] segments) {
 		
 		Optional<RouteSegment> next;
 		RouteSegment current = this.root;
@@ -311,7 +320,9 @@ public class RoutesConfigImpl implements RoutesConfig {
 			return null;
 		}
 	}
-	
+
+    private static final String segment_separator = "/";
+
 	private static final Pattern pathPattern = Pattern.compile("^(OPTIONS|GET|HEAD|POST|PUT|DELETE|TRACE|CONNECT|PATCH)*([ ]*)(/.*)$");
 	
 	private static final Logger log = LoggerFactory.getLogger(RoutesConfigImpl.class);

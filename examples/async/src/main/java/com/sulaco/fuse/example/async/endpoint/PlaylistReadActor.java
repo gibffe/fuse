@@ -14,10 +14,6 @@ public class PlaylistReadActor extends FuseEndpointActor {
 
     @Autowired CassandraDao dao;
 
-    public PlaylistReadActor(ApplicationContext ctx) {
-        super(ctx);
-    }
-
     @Override
     protected void onRequest(FuseRequestMessage request) {
 

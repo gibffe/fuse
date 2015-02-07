@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.sulaco</groupId>
+		<artifactId>example-annotations</artifactId>
+		<name>example-annotations</name>
+    <version>0.0.2</version>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <spring.version>4.0.2.RELEASE</spring.version>
+    </properties>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+	    <dependency>
+        	<groupId>com.sulaco</groupId>
+            <artifactId>fuse</artifactId>
+            <version>0.0.2-SNAPSHOT</version>
+        </dependency>
+	</dependencies>
+
+</project>

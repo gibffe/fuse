@@ -1,5 +1,6 @@
 package com.sulaco.fuse;
 
+import com.sulaco.fuse.config.AnnotationScanner;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
@@ -45,6 +46,7 @@ public class FuseServerImpl implements FuseServer, InitializingBean, Application
 	@Autowired protected ActorFactory actorFactory;
 	@Autowired protected FuseChannelInitializer channelInitializer;
 	@Autowired protected ConfigSource configSource;
+    @Autowired protected AnnotationScanner annotationScanner;
 	
 	public FuseServerImpl() {		
 	}
@@ -54,13 +56,16 @@ public class FuseServerImpl implements FuseServer, InitializingBean, Application
 				
 		log.info("[fuse] Creating actor system");
 		actorSystem = ActorSystem.create("fuse", configSource.getConfig());
-		
-		log.info("[fuse] Creating system logger");
-		actorSystem.actorOf(Props.create(SystemLogActor.class));
+        actorFactory.setActorSystem(actorSystem);
 
-		log.info("[fuse] Initializing routing");
-		actorFactory.setActorSystem(actorSystem);
-		configSource.parseLocalConfig();
+        log.info("[fuse] Creating system logger");
+        actorSystem.actorOf(Props.create(SystemLogActor.class));
+
+        log.info("[fuse] Initializing routing");
+        configSource.parseLocalConfig();
+
+        log.info("[fuse] Running annotation scanner");
+        annotationScanner.scan();
 
 		// create router actor and pass the reference to channelInitializer
 		channelInitializer
@@ -130,18 +135,9 @@ public class FuseServerImpl implements FuseServer, InitializingBean, Application
 	
 	protected Iterable<ActorRef> getRouteFinders() {
 
-		List<ActorRef> finders = new ArrayList<>();
-	
-		for (int i = 0; i < configSource.getConfig().getInt("fuse.route.finders"); i++) {
-			finders.add(
-				actorSystem.actorOf(
-						Props.create(RouteFinderActor.class, appContext),
-						"route-finder-"+i
-				)
-			);
-		}
-		
-		return finders;
+        int spin = configSource.getConfig().getInt("fuse.route.finders");
+
+        return actorFactory.getRoutees("route_finder", RouteFinderActor.class, spin);
 	}
 
 	public void setSystem(ActorSystem system) {

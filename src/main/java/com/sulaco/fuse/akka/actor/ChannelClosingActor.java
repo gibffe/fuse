@@ -6,10 +6,6 @@ import org.springframework.context.ApplicationContext;
 
 public class ChannelClosingActor extends FuseBaseActor {
 
-    public ChannelClosingActor(ApplicationContext ctx) {
-        super(ctx);
-    }
-
     @Override
     public void onMessage(FuseInternalMessage message) {
         message.getContext()

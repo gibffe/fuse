@@ -33,25 +33,31 @@ public abstract class FuseBaseActor extends UntypedActor {
         this.animator = getContext().actorSelection("/user/animator");
 	}
 	
-	public FuseBaseActor(ApplicationContext ctx) {
-		this();
-		this.ctx = ctx;
-		
-		if (ctx != null) {
-			ctx.getAutowireCapableBeanFactory()
-			   .autowireBean(this);
-		}
-	}
-	
 	@Override
 	public void onReceive(Object message) throws Exception {
 		if (message instanceof FuseInternalMessage) {
 			onMessage((FuseInternalMessage) message);
 		}
+        else if (message instanceof ApplicationContext) {
+            autowire((ApplicationContext) message);
+        }
 		else {
 			unhandled(message);
 		}
 	}
+
+    public void autowire(ApplicationContext ctx) {
+        this.ctx = ctx;
+        try {
+            if (ctx != null) {
+                ctx.getAutowireCapableBeanFactory()
+                   .autowireBean(this);
+            }
+        }
+        catch (Exception ex) {
+            // TODO: log
+        }
+    }
 	
 	void onMessage(FuseInternalMessage message) {
 

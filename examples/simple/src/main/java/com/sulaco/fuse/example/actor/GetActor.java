@@ -6,13 +6,8 @@ import org.springframework.context.ApplicationContext;
 
 public class GetActor extends FuseEndpointActor {
 
-    public GetActor(ApplicationContext ctx) {
-        super(ctx);
-    }
-
     @Override
     protected void onRequest(FuseRequestMessage request) {
-
         proto.respond(request, "hello !\n");
     }
 }
