@@ -15,6 +15,7 @@ public class EchoActor extends FuseEndpointActor {
         // we'll let the Echo actor figure out how to echo the request uri string
         //
         FuseInternalMessage message = newMessage(request);
+
         message.getContext()
                .put(
                    "echo",
@@ -23,8 +24,8 @@ public class EchoActor extends FuseEndpointActor {
 
         send(message, "/user/echo");
 
-        // once the message is sent, at some point in the future this actor will receive an
-        // internal message backs
+        // once the message is processed by example.actor.Echo, at some point in the future this actor will receive an
+        // internal message back
     }
 
     @Override

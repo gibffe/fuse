@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
 
+//  /user/echo
+//
 @FuseActor(id = "echo")
 public class Echo extends FuseBaseActor {
 
