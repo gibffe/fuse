@@ -5,8 +5,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
     <groupId>com.sulaco</groupId>
-	<artifactId>fuse-ex1</artifactId>
-	<name>fuse-ex1</name>
+	<artifactId>example-simple</artifactId>
+	<name>example-simple</name>
     <version>0.0.2</version>
 
     <properties>

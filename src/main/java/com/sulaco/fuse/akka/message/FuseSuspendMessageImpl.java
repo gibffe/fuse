@@ -5,4 +5,8 @@ public class FuseSuspendMessageImpl extends FuseInternalMessageImpl implements F
     public FuseSuspendMessageImpl(FuseRequestMessage request) {
         super(request);
     }
+
+    public FuseSuspendMessageImpl(FuseInternalMessage message) {
+        super(message);
+    }
 }

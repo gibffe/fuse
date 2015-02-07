@@ -21,30 +21,18 @@ import com.sulaco.fuse.metrics.MetricsRegistry;
 
 public abstract class FuseEndpointActor extends FuseBaseActor {
 	
-	protected Timer meter;
-
 	@Autowired protected MetricsRegistry metrics;
 	
 	public FuseEndpointActor() {
 		super();
 	}
-	
-	public FuseEndpointActor(ApplicationContext ctx) {
-		super(ctx);
-		
-		if (ctx != null) {
-            if (metrics != null) {
-                meter = metrics.getRegistry().timer(getClass().getName());
-            }
-		}
-	}
-	
+
+    // TODO: refactor metrics
+    //            meter = metrics.getRegistry().timer(getClass().getName());
+
 	@Override
 	public void onReceive(Object message) throws Exception {
-		Timer.Context context = null;
 		try {
-			context = meter.time();
-			
 			if (message instanceof FuseRequestMessage) {
 				onRequest((FuseRequestMessage) message);
 			}
@@ -57,9 +45,6 @@ public abstract class FuseEndpointActor extends FuseBaseActor {
 			unhandled(message);
 		}
 		finally {
-			if (context != null) {
-				context.stop();
-			}
 		}
 	}
 	
@@ -101,10 +86,6 @@ public abstract class FuseEndpointActor extends FuseBaseActor {
 
     public void setProto(WireProtocol proto) {
         this.proto = proto;
-    }
-
-    public void setMeter(Timer meter) {
-        this.meter = meter;
     }
 
 	protected static final Logger log = LoggerFactory.getLogger(FuseEndpointActor.class);

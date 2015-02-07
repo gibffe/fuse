@@ -32,10 +32,10 @@ public class ActorAwareTest {
     }
 
     protected <T extends FuseEndpointActor> TestActorRef<T> mockEndpoint(Class<T> clazz) {
-        Props props = Props.create(clazz, mockAppCtx);
+        Props props = Props.create(clazz);
         TestActorRef<T> testActorRef = TestActorRef.create(system, props);
         testActorRef.underlyingActor().setProto(mockProto);
-        testActorRef.underlyingActor().setMeter(mockMeter);
+        testActorRef.underlyingActor().autowire(mockAppCtx);
 
         return testActorRef;
     }

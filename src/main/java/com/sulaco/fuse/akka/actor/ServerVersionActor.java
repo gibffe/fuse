@@ -10,10 +10,6 @@ public class ServerVersionActor extends FuseEndpointActor {
 
 	@Autowired FuseVersion version;
 	
-	public ServerVersionActor(ApplicationContext ctx) {
-		super(ctx);
-	}
-	
 	@Override
 	protected void onRequest(FuseRequestMessage message) {
 		proto.respond(message, version);

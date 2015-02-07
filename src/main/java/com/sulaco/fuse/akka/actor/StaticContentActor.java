@@ -2,7 +2,9 @@ package com.sulaco.fuse.akka.actor;
 
 
 import com.sulaco.fuse.akka.message.FuseRequestMessage;
+import com.sulaco.fuse.config.ConfigSource;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 
@@ -12,17 +14,18 @@ import java.nio.file.Paths;
 
 public class StaticContentActor extends FuseEndpointActor {
 
-    @Value("#{systemProperties.contentDir}")
-    String contentDir;
+    String contentDir = null;
 
-    public StaticContentActor(ApplicationContext ctx) {
-        super(ctx);
-    }
+    @Autowired ConfigSource configSource;
 
     @Override
     protected void onRequest(FuseRequestMessage request) {
 
+        initConfig();
+
         try {
+            // TODO: implement path security check - we should only be albe to see content under contentDir
+            //
             Path path = Paths.get(contentDir + request.getRequest().getUri())
                              .toRealPath();
 
@@ -30,6 +33,12 @@ public class StaticContentActor extends FuseEndpointActor {
         }
         catch (IOException ex) {
             proto.error(request, HttpResponseStatus.NOT_FOUND);
+        }
+    }
+
+    void initConfig() {
+        if (contentDir == null) {
+            contentDir = configSource.getConfig().getString("fuse.content.dir");
         }
     }
 }

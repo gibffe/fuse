@@ -1,5 +1,6 @@
 package com.sulaco.fuse.config.actor;
 
+import java.util.List;
 import java.util.Optional;
 
 import akka.actor.ActorSelection;
@@ -22,6 +23,8 @@ public interface ActorFactory extends ActorSystemAware, ApplicationContextAware 
 	public Optional<ActorRef> getLocalActorByRef(String ref);
 
     public Optional<ActorSelection> select(String path);
+
+    public Iterable<ActorRef> getRoutees(String ref, Class<?> clazz, int spinCount);
 
 	
 }

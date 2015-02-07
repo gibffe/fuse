@@ -2,6 +2,7 @@ package com.sulaco.fuse.akka.actor;
 
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.sulaco.fuse.akka.message.*;
@@ -32,52 +33,80 @@ public abstract class FuseBaseActor extends UntypedActor {
         this.animator = getContext().actorSelection("/user/animator");
 	}
 	
-	public FuseBaseActor(ApplicationContext ctx) {
-		this();
-		this.ctx = ctx;
-		
-		if (ctx != null) {
-			ctx.getAutowireCapableBeanFactory()
-			   .autowireBean(this);
-		}
-	}
-	
 	@Override
 	public void onReceive(Object message) throws Exception {
 		if (message instanceof FuseInternalMessage) {
 			onMessage((FuseInternalMessage) message);
 		}
+        else if (message instanceof ApplicationContext) {
+            autowire((ApplicationContext) message);
+        }
 		else {
 			unhandled(message);
 		}
 	}
+
+    public void autowire(ApplicationContext ctx) {
+        this.ctx = ctx;
+        try {
+            if (ctx != null) {
+                ctx.getAutowireCapableBeanFactory()
+                   .autowireBean(this);
+            }
+        }
+        catch (Exception ex) {
+            // TODO: log
+        }
+    }
 	
-	public void onMessage(FuseInternalMessage message) {
+	void onMessage(FuseInternalMessage message) {
 
         if (message instanceof FuseSuspendMessage) {
             Optional<Object> payload = message.getContext().get("payload");
-            onRevive(message.getContext().getRequest().get(), payload.get());
+            onRevive(message, payload.get());
         }
         else {
             onInternal(message);
         }
 	}
 
-    protected void onRevive(FuseRequestMessage request, Object payload) {
+    protected void onRevive(FuseInternalMessage message, Object payload) {
+        FuseRequestMessage request = message.getContext().getRequest().get();
         proto.respond(request, payload);
     }
 
     protected void onInternal(FuseInternalMessage message) {
+        bubble(message);
+    }
+
+    protected final void bubble(FuseInternalMessage message, Object payload) {
+
+        FuseInternalMessage msg = message;
+        if (message instanceof FuseSuspendMessage) {
+            msg = new FuseInternalMessageImpl(message);
+        }
+
+        msg.getContext()
+           .put(
+               "payload",
+               Optional.ofNullable(payload)
+           );
+
+        bubble(msg);
+    }
+
+    protected final void bubble(FuseInternalMessage message) {
         Optional<ActorRef> origin = message.popOrigin();
 
         // push message down the chain
         if (origin.isPresent()) {
             origin.get()
-                    .tell(
-                            message,
-                            self()
-                    );
-        } else {
+                  .tell(
+                      message,
+                      self()
+                  );
+        }
+        else {
             // no more actors that could potentially handle this internal message, this
             // would usually be a logic error
             unhandled(message);
@@ -104,10 +133,6 @@ public abstract class FuseBaseActor extends UntypedActor {
 		super.unhandled(message);
 	}
 	
-	protected FuseInternalMessage newMessage() {
-		return newMessage(null);
-	}
-	
 	protected FuseInternalMessage newMessage(FuseRequestMessage request) {
 		
 		FuseInternalMessage message = new FuseInternalMessageImpl();
@@ -115,6 +140,10 @@ public abstract class FuseBaseActor extends UntypedActor {
 		
 		return message;
 	}
+
+    protected FuseInternalMessage newMessage(FuseInternalMessage internal) {
+        return new FuseInternalMessageImpl(internal);
+    }
 	
 	protected void info(String message) {
 		
@@ -127,6 +156,13 @@ public abstract class FuseBaseActor extends UntypedActor {
 		
 		logger.tell(logmessage, getSelf());
 	}
+
+    protected void suspend(FuseInternalMessage message) {
+        send(
+            new FuseSuspendMessageImpl(message),
+            animator
+        );
+    }
 
     protected void suspend(FuseRequestMessage message) {
         send(
@@ -143,9 +179,17 @@ public abstract class FuseBaseActor extends UntypedActor {
         );
     }
 
-    protected Object revive(long id, Object payload) {
+    protected Object revive(FuseInternalMessage message, Object payload) {
         send(
-            new FuseReviveMessageImpl(id, payload),
+            new FuseReviveMessageImpl(message.getRequestId(), payload),
+            animator
+        );
+        return null;
+    }
+
+    protected Object revive(FuseRequestMessage request, Object payload) {
+        send(
+            new FuseReviveMessageImpl(request.getId(), payload),
             animator
         );
         return null;
