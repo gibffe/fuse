@@ -39,16 +39,25 @@ public abstract class FuseBaseActor extends UntypedActor {
 			onMessage((FuseInternalMessage) message);
 		}
         else if (message instanceof ApplicationContext) {
-            ctx = (ApplicationContext) message;
-            if (ctx != null) {
-                ctx.getAutowireCapableBeanFactory()
-                   .autowireBean(this);
-            }
+            autowire((ApplicationContext) message);
         }
 		else {
 			unhandled(message);
 		}
 	}
+
+    public void autowire(ApplicationContext ctx) {
+        this.ctx = ctx;
+        try {
+            if (ctx != null) {
+                ctx.getAutowireCapableBeanFactory()
+                   .autowireBean(this);
+            }
+        }
+        catch (Exception ex) {
+            // TODO: log
+        }
+    }
 	
 	void onMessage(FuseInternalMessage message) {
 

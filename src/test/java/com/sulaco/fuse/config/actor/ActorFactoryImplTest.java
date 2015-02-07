@@ -18,6 +18,7 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.testkit.TestActorRef;
+import org.springframework.context.ApplicationContext;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ActorFactoryImplTest {
@@ -25,6 +26,8 @@ public class ActorFactoryImplTest {
 	ActorFactoryImpl instance;
 	
 	ActorSystem system;
+
+    @Mock ApplicationContext mockCtx;
 	
 	@Before
 	public void setup() {
@@ -33,6 +36,7 @@ public class ActorFactoryImplTest {
 		
 		instance = new ActorFactoryImpl();
 		instance.setActorSystem(system);
+        instance.setApplicationContext(mockCtx);
 	}
 	
 	@Test
@@ -64,15 +68,5 @@ public class ActorFactoryImplTest {
 
 		verify(system, times(3)).actorOf(any(Props.class), anyString());
 	}
-	
-	@Test
-	public void testCreateActorInvalidClass() {
-		
-		// when
-		Optional<ActorRef> result = instance.getLocalActor("foo", "java.lang.String", 1);
-		
-		// then
-		assertThat(result).isNotNull();
-		assertThat(result.isPresent()).isFalse();
-	}
+
 }

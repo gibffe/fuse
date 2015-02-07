@@ -23,8 +23,6 @@ public class FuseServerImplTest {
 	
 	@Autowired FuseServer server;
 	
-	
-	
 	@Before
 	public void setup() throws Exception {
 		if (!started) {
