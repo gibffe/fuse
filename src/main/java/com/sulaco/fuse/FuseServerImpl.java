@@ -38,24 +38,24 @@ import com.typesafe.config.Config;
 @Component
 public class FuseServerImpl implements FuseServer, InitializingBean, ApplicationContextAware {
 
-	protected ExecutorService exe = Executors.newSingleThreadExecutor();
-	
-	protected ActorSystem actorSystem;
-	protected ApplicationContext appContext;
-	
-	@Autowired protected ActorFactory actorFactory;
-	@Autowired protected FuseChannelInitializer channelInitializer;
-	@Autowired protected ConfigSource configSource;
+    protected ExecutorService exe = Executors.newSingleThreadExecutor();
+    
+    protected ActorSystem actorSystem;
+    protected ApplicationContext appContext;
+    
+    @Autowired protected ActorFactory actorFactory;
+    @Autowired protected FuseChannelInitializer channelInitializer;
+    @Autowired protected ConfigSource configSource;
     @Autowired protected AnnotationScanner annotationScanner;
-	
-	public FuseServerImpl() {		
-	}
-	
-	@Override
-	public void afterPropertiesSet() throws Exception {
-				
-		log.info("[fuse] Creating actor system");
-		actorSystem = ActorSystem.create("fuse", configSource.getConfig());
+    
+    public FuseServerImpl() {       
+    }
+    
+    @Override
+    public void afterPropertiesSet() throws Exception {
+                
+        log.info("[fuse] Creating actor system");
+        actorSystem = ActorSystem.create("fuse", configSource.getConfig());
         actorFactory.setActorSystem(actorSystem);
 
         log.info("[fuse] Creating system logger");
@@ -67,16 +67,16 @@ public class FuseServerImpl implements FuseServer, InitializingBean, Application
         log.info("[fuse] Running annotation scanner");
         annotationScanner.scan();
 
-		// create router actor and pass the reference to channelInitializer
-		channelInitializer
-			.setRouter(
-				actorSystem.actorOf(
-					Props.empty()
-						 .withRouter(
-						     RoundRobinRouter.create(getRouteFinders())
-						 )							
-				)
-			);
+        // create router actor and pass the reference to channelInitializer
+        channelInitializer
+            .setRouter(
+                actorSystem.actorOf(
+                    Props.empty()
+                         .withRouter(
+                             RoundRobinRouter.create(getRouteFinders())
+                         )                          
+                )
+            );
 
         // create suspended animator
         actorFactory.getLocalActor(
@@ -85,26 +85,26 @@ public class FuseServerImpl implements FuseServer, InitializingBean, Application
             "animator",
             configSource.getConfig().getInt("fuse.animator.spin")
         );
-	}
-	
-	@Override
-	public FutureTask<Integer> startServer() {
+    }
+    
+    @Override
+    public FutureTask<Integer> startServer() {
 
-		return (FutureTask<Integer>) exe.submit(
-				() -> {
-					startNetty(actorSystem);
-					return -1;
-				}
-		);
-	}
+        return (FutureTask<Integer>) exe.submit(
+                () -> {
+                    startNetty(actorSystem);
+                    return -1;
+                }
+        );
+    }
 
-	protected void startNetty(ActorSystem system) {
-		
-		log.info("[fuse] Starting netty...");
-		
-		Config config = configSource.getConfig();
+    protected void startNetty(ActorSystem system) {
+        
+        log.info("[fuse] Starting netty...");
+        
+        Config config = configSource.getConfig();
 
-		EventLoopGroup bossGroup   = new NioEventLoopGroup(config.getInt("netty.boss.eventloop.threads"));
+        EventLoopGroup bossGroup   = new NioEventLoopGroup(config.getInt("netty.boss.eventloop.threads"));
         EventLoopGroup workerGroup = new NioEventLoopGroup(config.getInt("netty.work.eventloop.threads"));
         
         try {
@@ -115,8 +115,8 @@ public class FuseServerImpl implements FuseServer, InitializingBean, Application
                 .option(ChannelOption.TCP_NODELAY, true);
 
             Channel channel = boot.bind(config.getInt("fuse.port"))
-				                  .sync()
-				                  .channel();
+                                  .sync()
+                                  .channel();
 
             log.info("[fuse] netty:{} GET /fuse/status for more info", config.getInt("fuse.port"));
             
@@ -124,30 +124,30 @@ public class FuseServerImpl implements FuseServer, InitializingBean, Application
                    .sync();
         } 
         catch (Exception ex) {
-        	log.error("Error starting netty !", ex);
-        	throw new RuntimeException(ex);
-		} 
+            log.error("Error starting netty !", ex);
+            throw new RuntimeException(ex);
+        } 
         finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
-        }	
-	}
-	
-	protected Iterable<ActorRef> getRouteFinders() {
+        }   
+    }
+    
+    protected Iterable<ActorRef> getRouteFinders() {
 
         int spin = configSource.getConfig().getInt("fuse.route.finders");
 
         return actorFactory.getRoutees("route_finder", RouteFinderActor.class, spin);
-	}
+    }
 
-	public void setSystem(ActorSystem system) {
-		this.actorSystem = system;
-	}
+    public void setSystem(ActorSystem system) {
+        this.actorSystem = system;
+    }
 
-	@Override
-	public void setApplicationContext(ApplicationContext appContext) throws BeansException {
-		this.appContext = appContext;
-	}
+    @Override
+    public void setApplicationContext(ApplicationContext appContext) throws BeansException {
+        this.appContext = appContext;
+    }
 
-	private static final Logger log = LoggerFactory.getLogger(FuseServerImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(FuseServerImpl.class);
 }

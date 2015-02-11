@@ -18,17 +18,17 @@ public class FuseRequestMessageImpl implements FuseRequestMessage {
 
     HttpRequest incomingRequest;
 
-	ChannelHandlerContext channelContext;
+    ChannelHandlerContext channelContext;
 
-	Route route;
-	
-	volatile boolean flushed = false;
-	
-	public FuseRequestMessageImpl(long id, ChannelHandlerContext context, HttpRequest request) {
-		this.id = id;
+    Route route;
+    
+    volatile boolean flushed = false;
+    
+    public FuseRequestMessageImpl(long id, ChannelHandlerContext context, HttpRequest request) {
+        this.id = id;
         this.channelContext  = context;
-		this.incomingRequest = request;
-	}
+        this.incomingRequest = request;
+    }
 
     @Override
     public long getId() {
@@ -41,45 +41,45 @@ public class FuseRequestMessageImpl implements FuseRequestMessage {
     }
 
     @Override
-	public ChannelHandlerContext getChannelContext() {
-		return channelContext;
-	}
+    public ChannelHandlerContext getChannelContext() {
+        return channelContext;
+    }
 
     @Override
-	public RouteHandler getHandler() {
-		return route.getHandler();
-	}
+    public RouteHandler getHandler() {
+        return route.getHandler();
+    }
 
     @Override
-	public Map<String, String> getParams() {
-		return route.getParams();
-	}
+    public Map<String, String> getParams() {
+        return route.getParams();
+    }
 
     @Override
-	public Optional<String> getParam(String name) {
-		return route.getParam(name);
-	}
+    public Optional<String> getParam(String name) {
+        return route.getParam(name);
+    }
 
     @Override
-	public String getRequestBody() {
-		return ((DefaultFullHttpRequest) incomingRequest).content().toString(charset_utf8);
-	}
+    public String getRequestBody() {
+        return ((DefaultFullHttpRequest) incomingRequest).content().toString(charset_utf8);
+    }
 
-	public void setRoute(Route route) {
-		this.route = route;
-	}
-
-    @Override
-	public void flush() {
-		channelContext.flush();
-		flushed = true;
-	}
+    public void setRoute(Route route) {
+        this.route = route;
+    }
 
     @Override
-	public boolean flushed() {
-		return flushed;
-	}
+    public void flush() {
+        channelContext.flush();
+        flushed = true;
+    }
 
-	private static final Charset charset_utf8 = Charset.forName("UTF-8");
-	
+    @Override
+    public boolean flushed() {
+        return flushed;
+    }
+
+    private static final Charset charset_utf8 = Charset.forName("UTF-8");
+    
 }

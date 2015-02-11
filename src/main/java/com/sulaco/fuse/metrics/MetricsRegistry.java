@@ -7,10 +7,10 @@ import com.codahale.metrics.MetricRegistry;
 @Component
 public class MetricsRegistry {
 
-	final MetricRegistry metrics = new MetricRegistry();
-	
-	public MetricRegistry getRegistry() {
-		return metrics;
-	}
-	
+    final MetricRegistry metrics = new MetricRegistry();
+    
+    public MetricRegistry getRegistry() {
+        return metrics;
+    }
+    
 }

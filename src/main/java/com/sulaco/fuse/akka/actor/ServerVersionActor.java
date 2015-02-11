@@ -8,11 +8,11 @@ import com.sulaco.fuse.akka.message.FuseRequestMessage;
 
 public class ServerVersionActor extends FuseEndpointActor {
 
-	@Autowired FuseVersion version;
-	
-	@Override
-	protected void onRequest(FuseRequestMessage message) {
-		proto.respond(message, version);
-	}
+    @Autowired FuseVersion version;
+    
+    @Override
+    protected void onRequest(FuseRequestMessage message) {
+        proto.respond(message, version);
+    }
 
 }

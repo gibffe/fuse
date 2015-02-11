@@ -23,29 +23,29 @@ import static io.netty.handler.codec.http.HttpHeaders.isKeepAlive;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 public interface WireProtocol {
-	
+    
     void ok(FuseRequestMessage message);
 
 
     void respond(FuseRequestMessage message, Object object);
-	
-	void respond(FuseRequestMessage message, String content);
-	
-	void respondRaw(FuseRequestMessage message, HttpResponseStatus status, ByteBuffer data, Map<String, String> headers);
+    
+    void respond(FuseRequestMessage message, String content);
+    
+    void respondRaw(FuseRequestMessage message, HttpResponseStatus status, ByteBuffer data, Map<String, String> headers);
 
-	
-	void error(FuseRequestMessage message);
-	
-	void error(FuseRequestMessage message, Object object);
+    
+    void error(FuseRequestMessage message);
+    
+    void error(FuseRequestMessage message, Object object);
 
-	void error(FuseRequestMessage message, String content);
-	
-	void error(FuseRequestMessage message, HttpResponseStatus status, Object object);
+    void error(FuseRequestMessage message, String content);
+    
+    void error(FuseRequestMessage message, HttpResponseStatus status, Object object);
 
-	void error(FuseRequestMessage message, HttpResponseStatus status, String content);
-	
+    void error(FuseRequestMessage message, HttpResponseStatus status, String content);
+    
 
-	<T> Optional<T> read(FuseRequestMessage message, Class<T> clazz);
+    <T> Optional<T> read(FuseRequestMessage message, Class<T> clazz);
 
     default void stream(FuseRequestMessage message, Path path) {
 

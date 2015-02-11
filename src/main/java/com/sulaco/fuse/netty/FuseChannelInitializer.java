@@ -18,46 +18,46 @@ import akka.actor.ActorRef;
 @Component
 public class FuseChannelInitializer extends ChannelInitializer<SocketChannel> {
 
-	protected List<ChannelHandler> channelHandlers;
-	
-	protected ChannelHandler fuseChannelHandler;
-	
-	protected ActorRef router;
-	
-	@Override
-	protected void initChannel(SocketChannel ch) throws Exception {
-		
+    protected List<ChannelHandler> channelHandlers;
+
+    protected ChannelHandler fuseChannelHandler;
+
+    protected ActorRef router;
+
+    @Override
+    protected void initChannel(SocketChannel ch) throws Exception {
+
         ChannelPipeline pipeline = ch.pipeline();
 
         // add handlers stack 
         //
         if (channelHandlers != null) {
-        	for (ChannelHandler handler : channelHandlers) {
-        		pipeline.addLast(handler.getClass().getName(), handler);
-        	}
+            for (ChannelHandler handler : channelHandlers) {
+                pipeline.addLast(handler.getClass().getName(), handler);
+            }
         }
         else {
-        	addDefaultHandlerStack(pipeline);
+            addDefaultHandlerStack(pipeline);
         }
         
         // at last , add FUSE channel handler, passing the router actor reference
         //
         pipeline.addLast("handler", new FuseChannelHandler(this.router));
-	}
-	
-	protected void addDefaultHandlerStack(ChannelPipeline pipeline) {
-		pipeline.addLast("decoder"       , new HttpRequestDecoder());
+    }
+
+    protected void addDefaultHandlerStack(ChannelPipeline pipeline) {
+        pipeline.addLast("decoder"       , new HttpRequestDecoder());
         pipeline.addLast("aggregator"    , new HttpObjectAggregator(66560));
         pipeline.addLast("encoder"       , new HttpResponseEncoder());
         pipeline.addLast("chunkedWriter" , new ChunkedWriteHandler());
-	}
+    }
 
-	public void setChannelHandlers(List<ChannelHandler> channelHandlers) {
-		this.channelHandlers = channelHandlers;
-	}
+    public void setChannelHandlers(List<ChannelHandler> channelHandlers) {
+        this.channelHandlers = channelHandlers;
+    }
 
-	public void setRouter(ActorRef router) {
-		this.router = router;
-	}
-	
+    public void setRouter(ActorRef router) {
+        this.router = router;
+    }
+
 }

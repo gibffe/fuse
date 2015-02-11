@@ -5,9 +5,9 @@ import com.typesafe.config.Config;
 
 public interface ConfigSource {
 
-	public void parseLocalConfig();
-	
-	public Config getConfig();
-	
-	public RoutesConfig getRoutesConfig();
+    public void parseLocalConfig();
+    
+    public Config getConfig();
+    
+    public RoutesConfig getRoutesConfig();
 }

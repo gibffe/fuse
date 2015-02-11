@@ -15,10 +15,10 @@ public interface FuseRequestMessage extends Route {
 
     String getRequestBody();
 
-	ChannelHandlerContext getChannelContext();
+    ChannelHandlerContext getChannelContext();
 
-	void flush();
+    void flush();
 
-	boolean flushed();
+    boolean flushed();
 
 }

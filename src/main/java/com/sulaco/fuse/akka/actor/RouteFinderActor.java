@@ -20,14 +20,14 @@ import com.sulaco.fuse.config.route.RoutesConfig;
 
 public class RouteFinderActor extends FuseEndpointActor {
 
-	@Autowired protected RoutesConfig routes;
-	
-	@Override
-	protected void onRequest(final FuseRequestMessage message) {
-		
-		String uri = message.getRequest().getUri();
-		
-		Optional<Route> route = routes.getFuseRoute(uri);
+    @Autowired protected RoutesConfig routes;
+    
+    @Override
+    protected void onRequest(final FuseRequestMessage message) {
+        
+        String uri = message.getRequest().getUri();
+        
+        Optional<Route> route = routes.getFuseRoute(uri);
 
         if (route.isPresent()) {
             Route rte = route.get();
@@ -56,10 +56,10 @@ public class RouteFinderActor extends FuseEndpointActor {
         else {
             unhandled(message);
         }
-	}
+    }
 
-	public void setRoutes(RoutesConfig routes) {
-		this.routes = routes;
-	}
-	
+    public void setRoutes(RoutesConfig routes) {
+        this.routes = routes;
+    }
+    
 }

@@ -20,73 +20,73 @@ import com.sulaco.fuse.config.route.RouteHandler;
 import com.sulaco.fuse.metrics.MetricsRegistry;
 
 public abstract class FuseEndpointActor extends FuseBaseActor {
-	
-	@Autowired protected MetricsRegistry metrics;
-	
-	public FuseEndpointActor() {
-		super();
-	}
+    
+    @Autowired protected MetricsRegistry metrics;
+    
+    public FuseEndpointActor() {
+        super();
+    }
 
     // TODO: refactor metrics
     //            meter = metrics.getRegistry().timer(getClass().getName());
 
-	@Override
-	public void onReceive(Object message) throws Exception {
-		try {
-			if (message instanceof FuseRequestMessage) {
-				onRequest((FuseRequestMessage) message);
-			}
-			else {
-				super.onReceive(message);
-			}
-		}
-		catch (Exception ex) {
-			log.error("Error handling request !", ex);
-			unhandled(message);
-		}
-		finally {
-		}
-	}
-	
-	protected void onRequest(final FuseRequestMessage request) {
-		
-		RouteHandler rhandler = request.getHandler();
-		
-		Optional<String> method = rhandler.getMethodName();
-		
-		if (method.isPresent()) {
-			// Invoke configured method instead of default 'onReceive'. Method needs to have correct
-			// signature, otherwise, fallback to 'onReceive' will occur.
-			//
-			Optional<Method> target = lookupMethod(this, method.get());
-			if (target.isPresent()) {
-				try {
-					target.get()
-						  .invoke(this, request);
-				}
-				catch (Exception ex) {
-					log.warn("[fuse] Invocation failure. x_x", ex);
-				}
-			}		
-		}
-		else {
-			log.warn("[fuse] No handling method specified. Override onReceive. x_x");
-		}
-	}
+    @Override
+    public void onReceive(Object message) throws Exception {
+        try {
+            if (message instanceof FuseRequestMessage) {
+                onRequest((FuseRequestMessage) message);
+            }
+            else {
+                super.onReceive(message);
+            }
+        }
+        catch (Exception ex) {
+            log.error("Error handling request !", ex);
+            unhandled(message);
+        }
+        finally {
+        }
+    }
+    
+    protected void onRequest(final FuseRequestMessage request) {
+        
+        RouteHandler rhandler = request.getHandler();
+        
+        Optional<String> method = rhandler.getMethodName();
+        
+        if (method.isPresent()) {
+            // Invoke configured method instead of default 'onReceive'. Method needs to have correct
+            // signature, otherwise, fallback to 'onReceive' will occur.
+            //
+            Optional<Method> target = lookupMethod(this, method.get());
+            if (target.isPresent()) {
+                try {
+                    target.get()
+                          .invoke(this, request);
+                }
+                catch (Exception ex) {
+                    log.warn("[fuse] Invocation failure. x_x", ex);
+                }
+            }       
+        }
+        else {
+            log.warn("[fuse] No handling method specified. Override onReceive. x_x");
+        }
+    }
 
 
 
-	@Override
-	public void unhandled(Object message) {
-		super.unhandled(message);
-		if (message instanceof FuseRequestMessage) {
-			proto.error((FuseRequestMessage) message);
-		}
-	}
+    @Override
+    public void unhandled(Object message) {
+        super.unhandled(message);
+        if (message instanceof FuseRequestMessage) {
+            proto.error((FuseRequestMessage) message);
+        }
+    }
 
     public void setProto(WireProtocol proto) {
         this.proto = proto;
     }
 
-	protected static final Logger log = LoggerFactory.getLogger(FuseEndpointActor.class);
+    protected static final Logger log = LoggerFactory.getLogger(FuseEndpointActor.class);
 }

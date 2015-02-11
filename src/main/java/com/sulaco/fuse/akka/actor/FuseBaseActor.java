@@ -20,31 +20,31 @@ import com.sulaco.fuse.akka.syslog.SystemLogMessage.LogMessageBuilder;
 
 public abstract class FuseBaseActor extends UntypedActor {
 
-	protected ActorSelection logger;
+    protected ActorSelection logger;
 
     protected ActorSelection animator;
 
-	protected ApplicationContext ctx;
+    protected ApplicationContext ctx;
 
     @Autowired protected WireProtocol proto;
-	
-	public FuseBaseActor() {
-		this.logger   = getContext().actorSelection("/user/logger");
+    
+    public FuseBaseActor() {
+        this.logger   = getContext().actorSelection("/user/logger");
         this.animator = getContext().actorSelection("/user/animator");
-	}
-	
-	@Override
-	public void onReceive(Object message) throws Exception {
-		if (message instanceof FuseInternalMessage) {
-			onMessage((FuseInternalMessage) message);
-		}
+    }
+    
+    @Override
+    public void onReceive(Object message) throws Exception {
+        if (message instanceof FuseInternalMessage) {
+            onMessage((FuseInternalMessage) message);
+        }
         else if (message instanceof ApplicationContext) {
             autowire((ApplicationContext) message);
         }
-		else {
-			unhandled(message);
-		}
-	}
+        else {
+            unhandled(message);
+        }
+    }
 
     public void autowire(ApplicationContext ctx) {
         this.ctx = ctx;
@@ -58,8 +58,8 @@ public abstract class FuseBaseActor extends UntypedActor {
             // TODO: log
         }
     }
-	
-	void onMessage(FuseInternalMessage message) {
+    
+    void onMessage(FuseInternalMessage message) {
 
         if (message instanceof FuseSuspendMessage) {
             Optional<Object> payload = message.getContext().get("payload");
@@ -68,7 +68,7 @@ public abstract class FuseBaseActor extends UntypedActor {
         else {
             onInternal(message);
         }
-	}
+    }
 
     protected void onRevive(FuseInternalMessage message, Object payload) {
         FuseRequestMessage request = message.getContext().getRequest().get();
@@ -113,9 +113,9 @@ public abstract class FuseBaseActor extends UntypedActor {
         }
     }
 
-	protected void send(FuseInternalMessage message, String path) {
+    protected void send(FuseInternalMessage message, String path) {
         send(message, getContext().actorSelection(path));
-	}
+    }
 
     protected void send(FuseInternalMessage message, ActorSelection selection) {
         message.pushOrigin(self());
@@ -128,34 +128,34 @@ public abstract class FuseBaseActor extends UntypedActor {
         selection.tell(message, bounceTo);
     }
 
-	@Override
-	public void unhandled(Object message) {
-		super.unhandled(message);
-	}
-	
-	protected FuseInternalMessage newMessage(FuseRequestMessage request) {
-		
-		FuseInternalMessage message = new FuseInternalMessageImpl();
-		message.getContext().setRequest(request);
-		
-		return message;
-	}
+    @Override
+    public void unhandled(Object message) {
+        super.unhandled(message);
+    }
+    
+    protected FuseInternalMessage newMessage(FuseRequestMessage request) {
+        
+        FuseInternalMessage message = new FuseInternalMessageImpl();
+        message.getContext().setRequest(request);
+        
+        return message;
+    }
 
     protected FuseInternalMessage newMessage(FuseInternalMessage internal) {
         return new FuseInternalMessageImpl(internal);
     }
-	
-	protected void info(String message) {
-		
-		LogMessageBuilder builder = SystemLogMessage.builder();
-		
-		SystemLogMessage logmessage 
-			= builder.withLevel(LogLevel.INFO)
-					 .withMessage(message)
-					 .build();
-		
-		logger.tell(logmessage, getSelf());
-	}
+    
+    protected void info(String message) {
+        
+        LogMessageBuilder builder = SystemLogMessage.builder();
+        
+        SystemLogMessage logmessage 
+            = builder.withLevel(LogLevel.INFO)
+                     .withMessage(message)
+                     .build();
+        
+        logger.tell(logmessage, getSelf());
+    }
 
     protected void suspend(FuseInternalMessage message) {
         send(

@@ -23,50 +23,50 @@ import org.springframework.context.ApplicationContext;
 @RunWith(MockitoJUnitRunner.class)
 public class ActorFactoryImplTest {
 
-	ActorFactoryImpl instance;
-	
-	ActorSystem system;
+    ActorFactoryImpl instance;
+    
+    ActorSystem system;
 
     @Mock ApplicationContext mockCtx;
-	
-	@Before
-	public void setup() {
-		
-		system = spy(ActorSystem.create());
-		
-		instance = new ActorFactoryImpl();
-		instance.setActorSystem(system);
+    
+    @Before
+    public void setup() {
+        
+        system = spy(ActorSystem.create());
+        
+        instance = new ActorFactoryImpl();
+        instance.setActorSystem(system);
         instance.setApplicationContext(mockCtx);
-	}
-	
-	@Test
-	public void testCreateSimpleActor() {
-		
-		// when
-		Optional<ActorRef> result = instance.getLocalActor("foo", "com.sulaco.fuse.akka.actor.NoopActor", 1);
-		
-		// then
-		assertThat(result.isPresent()).isTrue();
-		
-		assertThat(instance.cache.containsKey("foo"));
-		assertThat(instance.getLocalActorByRef("foo").isPresent()).isTrue();
-		
-		verify(system, times(1)).actorOf(any(Props.class), anyString());
-	}
-	
-	@Test
-	public void testCreateRouterActor() {
-		
-		// when
-		Optional<ActorRef> result = instance.getLocalActor("foo", "com.sulaco.fuse.akka.actor.NoopActor", 2);
-		
-		// then
-		assertThat(result.isPresent()).isTrue();
-	
-		assertThat(instance.cache.containsKey("foo"));
-		assertThat(instance.getLocalActorByRef("foo").isPresent()).isTrue();
+    }
+    
+    @Test
+    public void testCreateSimpleActor() {
+        
+        // when
+        Optional<ActorRef> result = instance.getLocalActor("foo", "com.sulaco.fuse.akka.actor.NoopActor", 1);
+        
+        // then
+        assertThat(result.isPresent()).isTrue();
+        
+        assertThat(instance.cache.containsKey("foo"));
+        assertThat(instance.getLocalActorByRef("foo").isPresent()).isTrue();
+        
+        verify(system, times(1)).actorOf(any(Props.class), anyString());
+    }
+    
+    @Test
+    public void testCreateRouterActor() {
+        
+        // when
+        Optional<ActorRef> result = instance.getLocalActor("foo", "com.sulaco.fuse.akka.actor.NoopActor", 2);
+        
+        // then
+        assertThat(result.isPresent()).isTrue();
+    
+        assertThat(instance.cache.containsKey("foo"));
+        assertThat(instance.getLocalActorByRef("foo").isPresent()).isTrue();
 
-		verify(system, times(3)).actorOf(any(Props.class), anyString());
-	}
+        verify(system, times(3)).actorOf(any(Props.class), anyString());
+    }
 
 }

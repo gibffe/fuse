@@ -7,17 +7,17 @@ import org.junit.Ignore;
 @Ignore
 public class TestUtil {
 
-	private static HttpClient client;
-	
-	public static HttpClient getHttpClient() {
-		if (client == null) {
-			initHttpClient();
-		}
-		return client;
-	}
-	
-	private static void initHttpClient() {
-		client = HttpClients.createDefault();
-	}
-	
+    private static HttpClient client;
+    
+    public static HttpClient getHttpClient() {
+        if (client == null) {
+            initHttpClient();
+        }
+        return client;
+    }
+    
+    private static void initHttpClient() {
+        client = HttpClients.createDefault();
+    }
+    
 }

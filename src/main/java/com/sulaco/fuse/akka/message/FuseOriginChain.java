@@ -7,9 +7,9 @@ import akka.actor.ActorRef;
 
 public interface FuseOriginChain {
 
-	Optional<ActorRef> popOrigin();
-	
-	void pushOrigin(ActorRef actorRef);
+    Optional<ActorRef> popOrigin();
+    
+    void pushOrigin(ActorRef actorRef);
 
     Deque<ActorRef> getChain();
 }

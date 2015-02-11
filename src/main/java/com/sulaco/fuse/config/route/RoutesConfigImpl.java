@@ -34,11 +34,11 @@ import javax.annotation.PostConstruct;
 @SuppressWarnings({"unchecked"})
 public class RoutesConfigImpl implements RoutesConfig {
 
-	@Autowired ActorFactory factory;
-	
-	RouteSegment root;
-	
-	@Autowired protected ConfigSource configSource;
+    @Autowired ActorFactory factory;
+    
+    RouteSegment root;
+    
+    @Autowired protected ConfigSource configSource;
 
     public void initRoot() {
 
@@ -55,18 +55,18 @@ public class RoutesConfigImpl implements RoutesConfig {
                 .build();
     }
 
-	@Override
-	public void parse() {		
-		log.info("[fuse] Parsing routes");
+    @Override
+    public void parse() {       
+        log.info("[fuse] Parsing routes");
 
         initRoot();
 
-		// parse actors section
-		parseActorDefs();
-		
-		// parse routes section
-		parseRouteDefs();
-	}
+        // parse actors section
+        parseActorDefs();
+        
+        // parse routes section
+        parseRouteDefs();
+    }
 
     @Override
     public Optional<Route> getFuseRoute(String requestUri) {
@@ -106,45 +106,45 @@ public class RoutesConfigImpl implements RoutesConfig {
     }
 
     void parseActorDefs() {
-		Set<Entry<String, ConfigValue>> actorDefs 
-			= configSource.getConfig()
-						  .getObject("actors")
-						  .entrySet();
+        Set<Entry<String, ConfigValue>> actorDefs 
+            = configSource.getConfig()
+                          .getObject("actors")
+                          .entrySet();
 
-		for (Entry<String, ConfigValue> entry : actorDefs) {
-			processActorEntry(entry);
-		}
-	}
-	
+        for (Entry<String, ConfigValue> entry : actorDefs) {
+            processActorEntry(entry);
+        }
+    }
+    
     void parseRouteDefs() {
-		Set<Entry<String, ConfigValue>> routeDefs
-			= configSource.getConfig()
-						  .getObject("routes")
-						  .entrySet();
+        Set<Entry<String, ConfigValue>> routeDefs
+            = configSource.getConfig()
+                          .getObject("routes")
+                          .entrySet();
 
-		for (Entry<String, ConfigValue> entry : routeDefs) {
-			processRouteEntry(entry);
-		}
-	}
-	
-	void processActorEntry(Entry<String, ConfigValue> entry) {
-	
-		// extract actor class
-		String actorClass = entry.getKey();
-		
-		// extract definition
-		Map<String, Object> map = (Map<String, Object>) entry.getValue().unwrapped();
-		
-		String id = (String) map.get("id");
-		int spinCount = parseSpinCount(map.get("spin"));
-		
-		factory.getLocalActor(id, actorClass, spinCount);
-	}
+        for (Entry<String, ConfigValue> entry : routeDefs) {
+            processRouteEntry(entry);
+        }
+    }
+    
+    void processActorEntry(Entry<String, ConfigValue> entry) {
+    
+        // extract actor class
+        String actorClass = entry.getKey();
+        
+        // extract definition
+        Map<String, Object> map = (Map<String, Object>) entry.getValue().unwrapped();
+        
+        String id = (String) map.get("id");
+        int spinCount = parseSpinCount(map.get("spin"));
+        
+        factory.getLocalActor(id, actorClass, spinCount);
+    }
 
-	void processRouteEntry(Entry<String, ConfigValue> entry) {
-	
-		// process actor definition
-		Optional<RouteHandlerBuilder> builder = processActorDefinition(entry.getValue());
+    void processRouteEntry(Entry<String, ConfigValue> entry) {
+    
+        // process actor definition
+        Optional<RouteHandlerBuilder> builder = processActorDefinition(entry.getValue());
 
         // process path definition
         if (builder.isPresent()) {
@@ -154,46 +154,46 @@ public class RoutesConfigImpl implements RoutesConfig {
             log.warn("Error processing route entry for: {}", entry.getKey());
         }
 
-	}
-	
-	Optional<RouteHandlerBuilder> processActorDefinition(ConfigValue cvalue) {
-		
-		try {
-			// extract actor definition
-			Map<String, Object> map = (Map<String, Object>) cvalue.unwrapped();
+    }
+    
+    Optional<RouteHandlerBuilder> processActorDefinition(ConfigValue cvalue) {
+        
+        try {
+            // extract actor definition
+            Map<String, Object> map = (Map<String, Object>) cvalue.unwrapped();
 
-			String actorRef   = (String) map.get("ref");
-			String methodName = (String) map.get("call");
-			String actorClass = (String) map.get("class");
-			
-			Optional<ActorRef> ref = Optional.empty();
-			
-			if (!StringUtils.isEmpty(actorRef)) {
-				// get actor by reference supplied
-				ref = factory.getLocalActorByRef(actorRef);
-			}
-			
-			if (!StringUtils.isEmpty(actorClass)) {
-				// create new actor using class specified
-				ref = factory.getLocalActor(actorClass);
-				
-			}
+            String actorRef   = (String) map.get("ref");
+            String methodName = (String) map.get("call");
+            String actorClass = (String) map.get("class");
+            
+            Optional<ActorRef> ref = Optional.empty();
+            
+            if (!StringUtils.isEmpty(actorRef)) {
+                // get actor by reference supplied
+                ref = factory.getLocalActorByRef(actorRef);
+            }
+            
+            if (!StringUtils.isEmpty(actorClass)) {
+                // create new actor using class specified
+                ref = factory.getLocalActor(actorClass);
+                
+            }
 
-			return Optional.ofNullable(
-					RouteHandler.builder()
-							    .withActorRef(ref)
-							    .withMethodName(methodName)
-			);
-		}
-		catch (Exception ex) {
-			log.warn("Error parsing actor definition: "+cvalue.render());
-		}
-		
-		return empty();
-	}
+            return Optional.ofNullable(
+                    RouteHandler.builder()
+                                .withActorRef(ref)
+                                .withMethodName(methodName)
+            );
+        }
+        catch (Exception ex) {
+            log.warn("Error parsing actor definition: "+cvalue.render());
+        }
+        
+        return empty();
+    }
 
-	
-	void processPathDefinition(String path, RouteHandlerBuilder handlerBuilder) {
+    
+    void processPathDefinition(String path, RouteHandlerBuilder handlerBuilder) {
 
         RouteSegment segment = root;
         RouteSegmentBuilder builder = RouteSegment.builder();
@@ -219,112 +219,112 @@ public class RoutesConfigImpl implements RoutesConfig {
                 builder.reset();
             }
         }
-	}
-	
-	private RouteSegment processSegment(String value, boolean more, RouteSegmentBuilder builder, RouteSegment parent, RouteHandler handler) {
-		
-		RouteSegment segment = null;
-		
-		builder.withValue(value);
-		builder.withParent(parent);
-		
-		// parameter detect
-		if (value.charAt(0) == '<' && value.charAt(value.length() -1) == '>') {
-			builder.withValue(extractParamName(value));
-			builder.withDynamic(true);
-		}
-		
-		if (!more) {
-			// last segment, assign handling actor
-			builder.withHandler(handler);
-		}
-		segment = builder.build();
-		
-		// check if parent already has a segment for this very segment key
-		// if it does, assign handler if necessary
-		RouteSegment existing = parent.children.get(segment.key());
-		if (existing != null && !existing.handler.isPresent()) {
-			existing.handler = segment.handler;
-		}
+    }
+    
+    private RouteSegment processSegment(String value, boolean more, RouteSegmentBuilder builder, RouteSegment parent, RouteHandler handler) {
+        
+        RouteSegment segment = null;
+        
+        builder.withValue(value);
+        builder.withParent(parent);
+        
+        // parameter detect
+        if (value.charAt(0) == '<' && value.charAt(value.length() -1) == '>') {
+            builder.withValue(extractParamName(value));
+            builder.withDynamic(true);
+        }
+        
+        if (!more) {
+            // last segment, assign handling actor
+            builder.withHandler(handler);
+        }
+        segment = builder.build();
+        
+        // check if parent already has a segment for this very segment key
+        // if it does, assign handler if necessary
+        RouteSegment existing = parent.children.get(segment.key());
+        if (existing != null && !existing.handler.isPresent()) {
+            existing.handler = segment.handler;
+        }
 
-		return existing != null 
-			            ? existing 
-			            : segment;
-	}
-	
-	private RouteSegment saveSegment(RouteSegment segment) {
-		
-		return segment.parent()
-					  .get()
-					  .addChild(segment)
-		;
-	}
-	
-	private int parseSpinCount(Object value) {
-		
-		if (value != null) {
-			if (value instanceof Integer) {
-				return (Integer) value;
-			}
-			throw new IllegalArgumentException("wrong spin count");
-		}
-		
-		return defaultSpinCount();
-	}
-	
-	private int defaultSpinCount() {
-		return configSource.getConfig().getInt("fuse.spin.default");
-	}
+        return existing != null 
+                        ? existing 
+                        : segment;
+    }
+    
+    private RouteSegment saveSegment(RouteSegment segment) {
+        
+        return segment.parent()
+                      .get()
+                      .addChild(segment)
+        ;
+    }
+    
+    private int parseSpinCount(Object value) {
+        
+        if (value != null) {
+            if (value instanceof Integer) {
+                return (Integer) value;
+            }
+            throw new IllegalArgumentException("wrong spin count");
+        }
+        
+        return defaultSpinCount();
+    }
+    
+    private int defaultSpinCount() {
+        return configSource.getConfig().getInt("fuse.spin.default");
+    }
 
-	private String extractParamName(String value) {
-		return value.split("<")[1].split(">")[0];
-	}
-	
-	Route find(String[] segments) {
-		
-		Optional<RouteSegment> next;
-		RouteSegment current = this.root;
-		
-		// holds parameters captured during route resolution
-		Map<String, String> params = new HashMap<>();
+    private String extractParamName(String value) {
+        return value.split("<")[1].split(">")[0];
+    }
+    
+    Route find(String[] segments) {
+        
+        Optional<RouteSegment> next;
+        RouteSegment current = this.root;
+        
+        // holds parameters captured during route resolution
+        Map<String, String> params = new HashMap<>();
 
-		for(int i = 1; i < segments.length; i++) {
+        for(int i = 1; i < segments.length; i++) {
 
-			next = current.child(segments[i]);
-			
-			if (!next.isPresent()) {
-				// look for 'parameter matching' segment
-				next = current.child("*");
-				if (next.isPresent()) {
-					// capture parameter
-					params.putIfAbsent(next.get().value(), segments[i]);
-				}
-			}
-			
-			if (next.isPresent()) {
-				current = next.get();
-			}
-			else {
-				break;
-			}
-		}
-		
-		// construct a route object
-		if (current.handler().isPresent()) {
-			return RouteImpl.builder()
-					        .withHandler(current.handler().get())
-					        .withParams(params)
-					        .build();
-		}
-		else {
-			return null;
-		}
-	}
+            next = current.child(segments[i]);
+            
+            if (!next.isPresent()) {
+                // look for 'parameter matching' segment
+                next = current.child("*");
+                if (next.isPresent()) {
+                    // capture parameter
+                    params.putIfAbsent(next.get().value(), segments[i]);
+                }
+            }
+            
+            if (next.isPresent()) {
+                current = next.get();
+            }
+            else {
+                break;
+            }
+        }
+        
+        // construct a route object
+        if (current.handler().isPresent()) {
+            return RouteImpl.builder()
+                            .withHandler(current.handler().get())
+                            .withParams(params)
+                            .build();
+        }
+        else {
+            return null;
+        }
+    }
 
     private static final String segment_separator = "/";
 
-	private static final Pattern pathPattern = Pattern.compile("^(OPTIONS|GET|HEAD|POST|PUT|DELETE|TRACE|CONNECT|PATCH)*([ ]*)(/.*)$");
-	
-	private static final Logger log = LoggerFactory.getLogger(RoutesConfigImpl.class);
+    private static final Pattern pathPattern = Pattern.compile("^(OPTIONS|GET|HEAD|POST|PUT|DELETE|TRACE|CONNECT|PATCH)*([ ]*)(/.*)$");
+    
+    private static final Logger log = LoggerFactory.getLogger(RoutesConfigImpl.class);
 
 }

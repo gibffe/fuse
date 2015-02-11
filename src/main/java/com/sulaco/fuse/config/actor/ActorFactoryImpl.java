@@ -22,107 +22,107 @@ import akka.routing.RoundRobinRouter;
 @Component
 public class ActorFactoryImpl implements ActorFactory {
 
-	ActorSystem system;
-	
-	ApplicationContext ctx;
-	
-	// caches { actor_id -> actor instance }
-	ConcurrentMap<String, ActorRef> cache;
-	
-	public ActorFactoryImpl() {
-		this.cache = new ConcurrentHashMap<>();
-	}
-	
-	@Override
-	public Optional<ActorRef> getLocalActor(String actorClass) {
-		return getLocalActor(actorClass, actorClass);
-	}
+    ActorSystem system;
+    
+    ApplicationContext ctx;
+    
+    // caches { actor_id -> actor instance }
+    ConcurrentMap<String, ActorRef> cache;
+    
+    public ActorFactoryImpl() {
+        this.cache = new ConcurrentHashMap<>();
+    }
+    
+    @Override
+    public Optional<ActorRef> getLocalActor(String actorClass) {
+        return getLocalActor(actorClass, actorClass);
+    }
 
-	@Override
-	public Optional<ActorRef> getLocalActor(String actorClass, String actorName) {
-		
-		ActorRef actorRef = null;
-		
-		try {
-			final Class<?> clazz = validateClass(actorClass);
-			actorRef = system.actorOf(Props.create(clazz),	actorName);
+    @Override
+    public Optional<ActorRef> getLocalActor(String actorClass, String actorName) {
+        
+        ActorRef actorRef = null;
+        
+        try {
+            final Class<?> clazz = validateClass(actorClass);
+            actorRef = system.actorOf(Props.create(clazz),  actorName);
             init(actorRef);
-		}
-		catch (Exception ex) {
-			log.error("Error creating actor:{}", actorClass, ex);	
-		}
-		
-		return Optional.ofNullable(actorRef);
-	}
-	
-	@Override
-	public Optional<ActorRef> getLocalActorByRef(String ref) {
+        }
+        catch (Exception ex) {
+            log.error("Error creating actor:{}", actorClass, ex);   
+        }
+        
+        return Optional.ofNullable(actorRef);
+    }
+    
+    @Override
+    public Optional<ActorRef> getLocalActorByRef(String ref) {
         return Optional.ofNullable(cache.get(ref));
-	}
-	
-	@Override
-	public Optional<ActorRef> getLocalActor(String ref, String actorClass, int spinCount) {
-		return getLocalActor(ref, actorClass, ref, spinCount);
-	}
+    }
+    
+    @Override
+    public Optional<ActorRef> getLocalActor(String ref, String actorClass, int spinCount) {
+        return getLocalActor(ref, actorClass, ref, spinCount);
+    }
 
-	@Override
-	public Optional<ActorRef> getLocalActor(String ref, String actorClass, String actorName, int spinCount) {
-		
-		ActorRef actorRef = null;
-		
-		try {
-			// preconditions check
-			final Class<?> clazz = validateClass(actorClass);
+    @Override
+    public Optional<ActorRef> getLocalActor(String ref, String actorClass, String actorName, int spinCount) {
+        
+        ActorRef actorRef = null;
+        
+        try {
+            // preconditions check
+            final Class<?> clazz = validateClass(actorClass);
 
-			if (spinCount < 0) {
-				// never cache for negative spin, always return fresh actor shell
-				actorRef = system.actorOf(Props.create(clazz), actorName);
-			}
-			else {
-				actorRef 
-					= cache.computeIfAbsent(
-						  ref, 
-						  key -> {
-							  if (spinCount == 1) {
-								  return system.actorOf(
-								      Props.create(clazz),
-									  actorName
-								  );
-							  }
-							  else {
-								  // return a router instead
-								  return system.actorOf(
+            if (spinCount < 0) {
+                // never cache for negative spin, always return fresh actor shell
+                actorRef = system.actorOf(Props.create(clazz), actorName);
+            }
+            else {
+                actorRef 
+                    = cache.computeIfAbsent(
+                          ref, 
+                          key -> {
+                              if (spinCount == 1) {
+                                  return system.actorOf(
+                                      Props.create(clazz),
+                                      actorName
+                                  );
+                              }
+                              else {
+                                  // return a router instead
+                                  return system.actorOf(
                                       Props.empty()
                                           .withRouter(
                                               RoundRobinRouter.create(getRoutees(ref, clazz, spinCount))
                                           ),
                                       actorName
-								  );
-							  }
-						  }
-					);
-			}
+                                  );
+                              }
+                          }
+                    );
+            }
             init(actorRef);
-		}
-		catch (Exception ex) {
-			log.error("Error creating actor: {}", actorClass, ex);
-		}
-		
-		return Optional.ofNullable(actorRef);
-	}
-	
-	public Iterable<ActorRef> getRoutees(String ref, Class<?> clazz, int spinCount) {
-		
-		List<ActorRef> actors = new ArrayList<>();
+        }
+        catch (Exception ex) {
+            log.error("Error creating actor: {}", actorClass, ex);
+        }
+        
+        return Optional.ofNullable(actorRef);
+    }
+    
+    public Iterable<ActorRef> getRoutees(String ref, Class<?> clazz, int spinCount) {
+        
+        List<ActorRef> actors = new ArrayList<>();
 
         ActorRef actorRef;
-		for (int i = 0; i < spinCount; i++) {
+        for (int i = 0; i < spinCount; i++) {
             actorRef = system.actorOf(Props.create(clazz), ref + "_" + i);
             actors.add(init(actorRef));
-		}
-		
-		return actors;
-	}
+        }
+        
+        return actors;
+    }
 
     @Override
     public Optional<ActorSelection> select(String path) {
@@ -137,19 +137,19 @@ public class ActorFactoryImpl implements ActorFactory {
     }
 
     @Override
-	public void setActorSystem(ActorSystem actorSystem) {
-		this.system = actorSystem;
-	}
-	
-	@Override
-	public ActorSystem getActorSystem() {
-		return this.system;
-	}
+    public void setActorSystem(ActorSystem actorSystem) {
+        this.system = actorSystem;
+    }
+    
+    @Override
+    public ActorSystem getActorSystem() {
+        return this.system;
+    }
 
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.ctx = applicationContext;
-	}
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.ctx = applicationContext;
+    }
 
     Class<?> validateClass(String actorClass) throws Exception {
 
@@ -165,7 +165,7 @@ public class ActorFactoryImpl implements ActorFactory {
         ref.tell(ctx, null);
         return ref;
     }
-	
-	private static final Logger log = LoggerFactory.getLogger(ActorFactoryImpl.class);
+    
+    private static final Logger log = LoggerFactory.getLogger(ActorFactoryImpl.class);
 
 }

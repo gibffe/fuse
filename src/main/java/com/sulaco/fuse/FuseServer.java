@@ -4,6 +4,6 @@ import java.util.concurrent.FutureTask;
 
 public interface FuseServer {
 
-	public FutureTask<Integer> startServer();
+    public FutureTask<Integer> startServer();
 
 }

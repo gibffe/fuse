@@ -19,13 +19,13 @@ import static com.sulaco.fuse.util.IdSource.*;
  */
 public class FuseChannelHandler extends ChannelInboundHandlerAdapter {
       
-	protected ActorRef router;
-	
-	public FuseChannelHandler(ActorRef router) {
-		super();
-		this.router = router;
-	}
-	
+    protected ActorRef router;
+
+    public FuseChannelHandler(ActorRef router) {
+        super();
+        this.router = router;
+    }
+
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
         //ctx.flush();
@@ -35,10 +35,10 @@ public class FuseChannelHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof HttpRequest) {
 
-        	router.tell(
-        		new FuseRequestMessageImpl(IdSource.getLong(), ctx, (HttpRequest) msg),
-        		null
-        	);
+            router.tell(
+                new FuseRequestMessageImpl(IdSource.getLong(), ctx, (HttpRequest) msg),
+                null
+            );
         }
     }
 
@@ -48,8 +48,8 @@ public class FuseChannelHandler extends ChannelInboundHandlerAdapter {
         ctx.close();
     }
 
-	public void setRouter(ActorRef router) {
-		this.router = router;
-	}
+    public void setRouter(ActorRef router) {
+        this.router = router;
+    }
     
 }
