@@ -11,6 +11,8 @@ import org.reflections.Reflections;
 import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -69,6 +71,11 @@ public class AnnotationScannerImpl implements AnnotationScanner {
     void processActor(Class<?> clazz) {
 
         if (FuseBaseActor.class.isAssignableFrom(clazz)) {
+
+            if (verbose) {
+                log.info("processing {}", clazz.getCanonicalName());
+            }
+
             // create new general purpose actor
             //
             FuseActor annotation = clazz.getAnnotation(FuseActor.class);
@@ -78,10 +85,20 @@ public class AnnotationScannerImpl implements AnnotationScanner {
 
             factory.getLocalActor(id, clazz.getName(), spin);
         }
+        else {
+            if (verbose) {
+                log.warn("{} not a FuseBase actor !", clazz.getCanonicalName());
+            }
+        }
     }
 
     void processEndpoint(Class<?> clazz) {
         if (FuseEndpointActor.class.isAssignableFrom(clazz)) {
+
+            if (verbose) {
+                log.info("processing {}", clazz.getCanonicalName());
+            }
+
             // create new endpoint actor
             //
             FuseEndpoint annotation = clazz.getAnnotation(FuseEndpoint.class);
@@ -99,5 +116,10 @@ public class AnnotationScannerImpl implements AnnotationScanner {
                 }
             );
         }
+        else {
+            log.warn("{} not a FuseEndpointActor !", clazz.getCanonicalName());
+        }
     }
+
+    static final Logger log = LoggerFactory.getLogger(AnnotationScannerImpl.class);
 }
