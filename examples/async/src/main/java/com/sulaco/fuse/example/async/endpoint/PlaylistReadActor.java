@@ -25,7 +25,7 @@ public class PlaylistReadActor extends FuseEndpointActor {
             // represented by custom path. If suspended without a path, this actor is treated
             // as origin, and revival message will be sent back to it. Take a look at FuseBaseActor.onMessage
             //
-            suspend(request, "/user/playlistResponse");
+            suspend(request);
 
             // we will cross thread boundaries inside the dao, take a look
             dao.getPlaylistById(
@@ -41,7 +41,7 @@ public class PlaylistReadActor extends FuseEndpointActor {
     // The revival message is delivered by suspended animation actor.
     //
     @Override
-    protected void onRevive(FuseInternalMessage message, Object payload) {
+    protected void onRevive(FuseInternalMessage message, Optional<?> payload) {
         proto.respond(
             message.getContext()
                    .getRequest()

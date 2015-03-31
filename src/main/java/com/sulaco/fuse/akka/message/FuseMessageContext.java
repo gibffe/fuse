@@ -15,7 +15,7 @@ public interface FuseMessageContext {
 
     public FuseMessageContext put(String key, Object value);
     
-    public FuseMessageContext put(String key, Optional<Object> value);
+    public FuseMessageContext put(String key, Optional<?> value);
     
     public Set<String> keys();
     

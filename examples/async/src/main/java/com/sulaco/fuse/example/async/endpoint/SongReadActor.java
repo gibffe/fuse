@@ -40,7 +40,7 @@ public class SongReadActor extends FuseEndpointActor {
     // The revival message is delivered by suspended animation actor.
     //
     @Override
-    protected void onRevive(FuseInternalMessage request, Object payload) {
+    protected void onRevive(FuseInternalMessage request, Optional<?> payload) {
         proto.respond(
             request.getContext()
                    .getRequest()
