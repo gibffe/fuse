@@ -55,7 +55,7 @@ public class FuseMessageContextImpl implements FuseMessageContext {
     }
 
     @Override
-    public FuseMessageContext put(String key, Optional<Object> value) {
+    public FuseMessageContext put(String key, Optional<?> value) {
         value.ifPresent(
             val -> {
                 put(key, val);

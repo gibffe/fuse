@@ -34,7 +34,7 @@ public class SuspendedAnimationActor extends FuseBaseActor {
                     sval.getContext()
                         .put(
                             "payload",
-                            Optional.ofNullable(msg.getPayload())
+                            msg.getPayload()
                         );
 
                     sval.popOrigin()

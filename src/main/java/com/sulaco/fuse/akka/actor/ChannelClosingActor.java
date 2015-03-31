@@ -2,7 +2,6 @@ package com.sulaco.fuse.akka.actor;
 
 
 import com.sulaco.fuse.akka.message.FuseInternalMessage;
-import org.springframework.context.ApplicationContext;
 
 public class ChannelClosingActor extends FuseBaseActor {
 

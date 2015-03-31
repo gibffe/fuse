@@ -63,23 +63,23 @@ public abstract class FuseBaseActor extends UntypedActor {
 
         if (message instanceof FuseSuspendMessage) {
             Optional<Object> payload = message.getContext().get("payload");
-            onRevive(message, payload.get());
+            onRevive(message, payload);
         }
         else {
             onInternal(message);
         }
     }
 
-    protected void onRevive(FuseInternalMessage message, Object payload) {
+    protected void onRevive(FuseInternalMessage message, Optional<?> payload) {
         FuseRequestMessage request = message.getContext().getRequest().get();
-        proto.respond(request, payload);
+        proto.respond(request, payload.get());
     }
 
     protected void onInternal(FuseInternalMessage message) {
         bubble(message);
     }
 
-    protected final void bubble(FuseInternalMessage message, Object payload) {
+    protected final void bubble(FuseInternalMessage message, Optional<?> payload) {
 
         FuseInternalMessage msg = message;
         if (message instanceof FuseSuspendMessage) {
@@ -89,7 +89,7 @@ public abstract class FuseBaseActor extends UntypedActor {
         msg.getContext()
            .put(
                "payload",
-               Optional.ofNullable(payload)
+               payload
            );
 
         bubble(msg);
@@ -179,7 +179,7 @@ public abstract class FuseBaseActor extends UntypedActor {
         );
     }
 
-    protected Object revive(FuseInternalMessage message, Object payload) {
+    protected Object revive(FuseInternalMessage message, Optional<?> payload) {
         send(
             new FuseReviveMessageImpl(message.getRequestId(), payload),
             animator
@@ -187,7 +187,7 @@ public abstract class FuseBaseActor extends UntypedActor {
         return null;
     }
 
-    protected Object revive(FuseRequestMessage request, Object payload) {
+    protected Object revive(FuseRequestMessage request, Optional<?> payload) {
         send(
             new FuseReviveMessageImpl(request.getId(), payload),
             animator

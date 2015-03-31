@@ -1,13 +1,13 @@
 package com.sulaco.fuse.akka.message;
 
-import java.util.UUID;
+import java.util.Optional;
 
 public class FuseReviveMessageImpl extends FuseInternalMessageImpl implements FuseReviveMessage {
 
     long id;
-    Object payload;
+    Optional<?> payload;
 
-    public FuseReviveMessageImpl(long id, Object payload) {
+    public FuseReviveMessageImpl(long id, Optional<?> payload) {
         this.id = id;
         this.payload = payload;
     }
@@ -18,7 +18,7 @@ public class FuseReviveMessageImpl extends FuseInternalMessageImpl implements Fu
     }
 
     @Override
-    public Object getPayload() {
+    public Optional<?> getPayload() {
         return payload;
     }
 }
