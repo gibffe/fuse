@@ -7,6 +7,7 @@ import com.sulaco.fuse.example.async.domain.entity.Playlist;
 import com.sulaco.fuse.example.async.domain.entity.Song;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -35,7 +36,7 @@ public class CassandraDaoImpl implements CassandraDao {
     }
 
     @Override
-    public void getSongById(String id, Function<Object, ?> consumer) {
+    public void getSongById(String id, Function<Optional<?>, ?> consumer) {
 
         ResultSetFuture future
             = session.executeAsync(
@@ -46,7 +47,7 @@ public class CassandraDaoImpl implements CassandraDao {
     }
 
     @Override
-    public void getPlaylistById(String id, Function<Object, ?> consumer) {
+    public void getPlaylistById(String id, Function<Optional<?>, ?> consumer) {
 
         ResultSetFuture future
             = session.executeAsync(
@@ -56,22 +57,23 @@ public class CassandraDaoImpl implements CassandraDao {
         consumeAsync(future, consumer, rs -> playlistFrom(id, rs));
     }
 
-    Playlist playlistFrom(String id, ResultSet rs) {
+    Optional<Playlist> playlistFrom(String id, ResultSet rs) {
 
         Playlist playlist = new Playlist(UUID.fromString(id));
         for (Row row : rs) {
             playlist.addSong(songFrom(row));
         }
 
-        return playlist;
+        return Optional.of(playlist);
     }
 
-    Song songFrom(ResultSet rs) {
-        Song song = Song.EMPTY;
+    Optional<Song> songFrom(ResultSet rs) {
+        Song song = null;
         if (rs.iterator().hasNext()) {
             song = songFrom(rs.iterator().next());
         }
-        return song;
+
+        return Optional.ofNullable(song);
     }
 
     Song songFrom(Row row) {
@@ -85,7 +87,7 @@ public class CassandraDaoImpl implements CassandraDao {
         return song;
     }
 
-    void consumeAsync(ResultSetFuture future, Function<Object, ?> consumer, Function<ResultSet, ?> extractor) {
+    void consumeAsync(ResultSetFuture future, Function<Optional<?>, ?> consumer, Function<ResultSet, Optional<?>> extractor) {
         Futures.addCallback(
             future,
             new FutureCallback<ResultSet>() {
