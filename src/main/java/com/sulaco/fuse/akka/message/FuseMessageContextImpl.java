@@ -65,6 +65,12 @@ public class FuseMessageContextImpl implements FuseMessageContext {
     }
 
     @Override
+    public FuseMessageContext remove (String key) {
+        context.remove(key);
+        return this;
+    }
+
+    @Override
     public Set<String> keys() {
         return context.keySet();
     }

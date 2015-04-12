@@ -35,6 +35,7 @@ public abstract class FuseEndpointActor extends FuseBaseActor {
         try {
             if (message instanceof FuseRequestMessage) {
                 onRequest((FuseRequestMessage) message);
+                //proto.error((FuseRequestMessage) message);
             }
             else {
                 super.onReceive(message);
@@ -45,6 +46,7 @@ public abstract class FuseEndpointActor extends FuseBaseActor {
             unhandled(message);
         }
         finally {
+            // TODO: context flush
         }
     }
     
