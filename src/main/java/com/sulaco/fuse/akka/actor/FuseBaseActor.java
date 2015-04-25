@@ -132,19 +132,23 @@ public abstract class FuseBaseActor extends UntypedActor {
     public void unhandled(Object message) {
         super.unhandled(message);
     }
-    
+
+    protected FuseInternalMessage newMessage() {
+        return new FuseInternalMessageImpl();
+    }
+
     protected FuseInternalMessage newMessage(FuseRequestMessage request) {
-        
+
         FuseInternalMessage message = new FuseInternalMessageImpl();
         message.getContext().setRequest(request);
-        
+
         return message;
     }
 
     protected FuseInternalMessage newMessage(FuseInternalMessage internal) {
         return new FuseInternalMessageImpl(internal);
     }
-    
+
     protected void info(String message) {
         
         LogMessageBuilder builder = SystemLogMessage.builder();
