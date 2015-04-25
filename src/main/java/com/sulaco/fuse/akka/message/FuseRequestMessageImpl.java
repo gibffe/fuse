@@ -1,5 +1,6 @@
 package com.sulaco.fuse.akka.message;
 
+import com.sulaco.fuse.util.PrimitiveConverters;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpRequest;
 import io.netty.handler.codec.http.HttpRequest;
@@ -58,6 +59,12 @@ public class FuseRequestMessageImpl implements FuseRequestMessage {
     @Override
     public Optional<String> getParam(String name) {
         return route.getParam(name);
+    }
+
+    @Override
+    public <T> Optional<T> getParam(String name, Class<T> clazz) {
+        Optional<String> param = route.getParam(name);
+        return param.map(v -> PrimitiveConverters.convert(v, clazz));
     }
 
     @Override
