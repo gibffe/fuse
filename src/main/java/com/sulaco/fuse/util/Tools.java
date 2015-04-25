@@ -56,19 +56,19 @@ public class Tools {
     private static final String getMethodKey(final String clazz, final String methodName) {
 
         keyCache.computeIfAbsent(clazz, 
-                                 k -> {
-                                     return new ConcurrentHashMap<String, String>();
-                                 }
+            k -> {
+                return new ConcurrentHashMap<String, String>();
+            }
         );
         
         keyCache.get(clazz)
                 .computeIfAbsent(methodName, 
-                                 k -> {
-                                     return new StringBuilder().append(clazz)
-                                                               .append(methodName)
-                                                               .toString()
-                                     ;
-                                 }
+                   k -> {
+                       return new StringBuilder().append(clazz)
+                                                 .append(methodName)
+                                                 .toString()
+                       ;
+                   }
                 );
         //
         return keyCache.get(clazz).get(methodName);
