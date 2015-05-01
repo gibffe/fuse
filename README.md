@@ -1,7 +1,7 @@
 fuse [![Build Status](https://travis-ci.org/gibffe/fuse.svg)](https://travis-ci.org/gibffe/fuse/)
 ====
 
-The main purpouse of this project is to serve as a boostrap into the world of reactive programming for average Joe Java Developer (like myself). Fuse is a work in progress micro rest server that enables creating actor based backends. Fuse has been built on top of [Netty](https://github.com/netty/netty) & [Akka](https://github.com/akka/akka).
+The main purpouse of this project is to serve as a boostrap into the world of reactive programming for busy Java Developers (like myself). Fuse is a work in progress micro rest server that enables creating actor based backends. Fuse has been built on top of [Netty](https://github.com/netty/netty) & [Akka](https://github.com/akka/akka).
 
 ### Hard dependencies
 -------------------------
