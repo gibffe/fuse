@@ -5,6 +5,7 @@ import com.sulaco.fuse.akka.message.FuseInternalMessage;
 import com.sulaco.fuse.akka.message.FuseRequestMessage;
 import com.sulaco.fuse.example.async.domain.dao.CassandraDao;
 import com.sulaco.fuse.example.async.domain.entity.Playlist;
+import com.sulaco.fuse.example.async.domain.entity.Song;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
@@ -15,7 +16,7 @@ public class SongReadActor extends FuseEndpointActor {
     @Autowired CassandraDao dao;
 
     @Override
-    protected void onRequest(FuseRequestMessage request) {
+    protected void onRequest(final FuseRequestMessage request) {
 
         Optional<String> id = request.getParam("songId");
 
@@ -33,7 +34,7 @@ public class SongReadActor extends FuseEndpointActor {
             );
         }
         else {
-            proto.respond(request, Playlist.EMPTY);
+            proto.respond(request, Song.EMPTY);
         }
     }
 
@@ -41,11 +42,12 @@ public class SongReadActor extends FuseEndpointActor {
     //
     @Override
     protected void onRevive(FuseInternalMessage request, Optional<?> payload) {
+
         proto.respond(
             request.getContext()
                    .getRequest()
                    .get(),
-            payload
+            payload.get()
         );
     }
 }

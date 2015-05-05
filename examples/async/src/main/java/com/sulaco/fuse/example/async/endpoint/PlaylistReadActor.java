@@ -15,7 +15,7 @@ public class PlaylistReadActor extends FuseEndpointActor {
     @Autowired CassandraDao dao;
 
     @Override
-    protected void onRequest(FuseRequestMessage request) {
+    protected void onRequest(final FuseRequestMessage request) {
 
         Optional<String> id = request.getParam("playlistId");
 
@@ -46,7 +46,7 @@ public class PlaylistReadActor extends FuseEndpointActor {
             message.getContext()
                    .getRequest()
                    .get(),
-            payload
+            payload.get()
         );
     }
 }
