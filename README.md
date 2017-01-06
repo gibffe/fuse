@@ -18,7 +18,7 @@ There are few steps necessary to boot your first reactive server
 <dependency>
     <groupId>com.sulaco</groupId>
     <artifactId>fuse</artifactId>
-    <version>0.0.3-SNAPSHOT</version>
+    <version>0.0.4-SNAPSHOT</version>
 </dependency>
 ```
 
