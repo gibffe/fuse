@@ -1,5 +1,7 @@
 package com.sulaco.fuse.netty;
 
+import com.sulaco.fuse.config.ConfigSource;
+import com.typesafe.config.Config;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -10,7 +12,10 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.stream.ChunkedWriteHandler;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import io.netty.handler.timeout.IdleStateHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import akka.actor.ActorRef;
@@ -18,9 +23,9 @@ import akka.actor.ActorRef;
 @Component
 public class FuseChannelInitializer extends ChannelInitializer<SocketChannel> {
 
-    protected List<ChannelHandler> channelHandlers;
+    @Autowired ConfigSource configSource;
 
-    protected ChannelHandler fuseChannelHandler;
+    protected List<ChannelHandler> channelHandlers;
 
     protected ActorRef router;
 
@@ -46,10 +51,18 @@ public class FuseChannelInitializer extends ChannelInitializer<SocketChannel> {
     }
 
     protected void addDefaultHandlerStack(ChannelPipeline pipeline) {
+        Config config = configSource.getConfig();
+
         pipeline.addLast("decoder"       , new HttpRequestDecoder());
         pipeline.addLast("aggregator"    , new HttpObjectAggregator(66560));
         pipeline.addLast("encoder"       , new HttpResponseEncoder());
         pipeline.addLast("chunkedWriter" , new ChunkedWriteHandler());
+        pipeline.addLast("idlehandler"   , new IdleStateHandler(
+                                               config.getLong("netty.reader.idle.time"),
+                                               config.getLong("netty.writer.idle.time"),
+                                               config.getLong("netty.either.idle.time"),
+                                               TimeUnit.MILLISECONDS
+                                           ));
     }
 
     public void setChannelHandlers(List<ChannelHandler> channelHandlers) {

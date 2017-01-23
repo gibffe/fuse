@@ -7,6 +7,8 @@ import io.netty.handler.codec.http.HttpRequest;
 import akka.actor.ActorRef;
 
 import com.sulaco.fuse.akka.message.FuseRequestMessageImpl;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 
 import static com.sulaco.fuse.util.IdSource.*;
 
@@ -39,6 +41,25 @@ public class FuseChannelHandler extends ChannelInboundHandlerAdapter {
                 new FuseRequestMessageImpl(IdSource.getLong(), ctx, (HttpRequest) msg),
                 null
             );
+        }
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent) {
+            IdleStateEvent event = (IdleStateEvent) evt;
+            if (event.state() == IdleState.ALL_IDLE) {
+                ctx.close();
+                return;
+            }
+            if (event.state() == IdleState.READER_IDLE) {
+                ctx.close();
+                return;
+            }
+            if (event.state() == IdleState.WRITER_IDLE) {
+                ctx.close();
+                return;
+            }
         }
     }
 
